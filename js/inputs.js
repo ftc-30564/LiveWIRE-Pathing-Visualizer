@@ -13,7 +13,7 @@ function initializeSidebar() {
     for (let i = 0; i < waypoints.length; i++) {
         let html = `
                 <div class="waypoint" id="waypoint-${i}">
-                <h2>Waypoint ${i}</h2>
+                <input type="text" class="waypoint-name" id="name-${i}" value="Waypoint${i}"></input>
                 <div class="coordinates">
                     <label>X:</label>
                     <input type="number" class="waypoint-coordinate" id="x-${i}" value="${waypoints[i].x.toFixed(2)}">
@@ -25,7 +25,7 @@ function initializeSidebar() {
 
                     <label>θ:</label>
                     <input type="number" class="waypoint-coordinate" id="theta-${i}" name="theta" value="${waypoints[i].theta.toFixed(2)}">
-                    <label class="unit">in</label>
+                    <label class="unit">deg</label>
                 </div>
                 <button onclick='document.getElementById("other-${i}").style.display = "block";'>More</button>
                 <div id="other-${i}" style="display: none;">
@@ -70,6 +70,10 @@ function initializeSidebar() {
     // adds event listeners to where anytime the inputs get changed, it updates the waypoint array
     for (let i = 0; i < waypoints.length; i++) {
         waypoints[i].setSidebarElement(document.getElementById(`waypoint-${i}`));
+
+        document.getElementById(`name-${i}`).addEventListener("input", (event) => {
+            waypoints[i].name = event.target.value;
+        })
 
         document.getElementById(`x-${i}`).addEventListener("input", (event) => {
             waypoints[i].x = parseFloat(event.target.value);
@@ -248,6 +252,10 @@ document.addEventListener('keydown', (event) => {
 
     if (event.key == 'r') {
         resetAnimation();
+    }
+
+    if (event.key == 'j') {
+        exporter.toggleJava();
     }
 });
 

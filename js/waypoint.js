@@ -9,6 +9,7 @@ class Waypoint {
         this.y = y;
         this.theta = theta;
 
+        this.name = "Waypoint";
         this.maxVelocity = DEFAULT_VELOCITY;
         this.maxAcceleration = DEFAULT_ACCEL;
         this.maxDeceleration = DEFAULT_DECEL;
