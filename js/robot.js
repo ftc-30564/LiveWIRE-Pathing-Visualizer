@@ -45,18 +45,29 @@ class Robot {
         // first figure out which waypoints it falls between
         let lastWaypoint;
         let nextWaypoint;
-        for (let x = 1; x < waypoints.length; x ++) {
-            if (waypoints[x].distanceIntoPath > distance) {
-                //alert("distance is " + distance + ", waypoint last is " + (x-1));
-                lastWaypoint = waypoints[x-1];
-                nextWaypoint = waypoints[x];
-                break;
+        if (waypoints.length == 1) {
+            lastWaypoint = waypoints[0];
+            nextWaypoint = waypoints[0];
+        }
+        if (waypoints.length == 2) {
+            lastWaypoint = waypoints[0];
+            nextWaypoint = waypoints[1];
+        }
+        else {
+            for (let x = 1; x < waypoints.length; x ++) {
+                if (waypoints[x].distanceIntoPath > distance) {
+                    //alert("distance is " + distance + ", waypoint last is " + (x-1));
+                    lastWaypoint = waypoints[x-1];
+                    nextWaypoint = waypoints[x];
+                    break;
+                }
             }
         }
 
+
         // next, figure out what x and y the robot should be at
-        let robotX = lastWaypoint.x + (Math.cos(lastWaypoint.angleWith(nextWaypoint)) * (distance - lastWaypoint.distanceIntoPath));
-        let robotY = lastWaypoint.y + (Math.sin(lastWaypoint.angleWith(nextWaypoint)) * (distance - lastWaypoint.distanceIntoPath));
+        let robotX = lastWaypoint.x + (Math.cos(lastWaypoint.angleWithRadians(nextWaypoint)) * (distance - lastWaypoint.distanceIntoPath));
+        let robotY = lastWaypoint.y + (Math.sin(lastWaypoint.angleWithRadians(nextWaypoint)) * (distance - lastWaypoint.distanceIntoPath));
 
         // interpolation for now
         // TODO: there are different heading strategies that need to be added

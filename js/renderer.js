@@ -24,12 +24,7 @@ function isWithinSquare(x, y, rx, ry, rl) {
     return ((Math.abs(rx - x) < (rl / 2)) && (Math.abs(ry - y) < (rl / 2)));
 }
 
-function updateCanvasToWindowSize() {
-
-}
-
 class Renderer {
-    // creates a new renderer with canvas, ctx, and waypoints list
     constructor(waypoints) {
         this.waypoints = waypoints;
         this.robot = new Robot();
@@ -83,22 +78,12 @@ class Renderer {
         }   
     }
 
-    // updates the distances between each waypoint, used for animation
-    updateWaypointDistances() {
-        let runningDistance = 0;
-        for (let x = 1; x < this.waypoints.length; x ++) {
-            runningDistance += this.waypoints[x].distanceFrom(this.waypoints[x-1]);
-            this.waypoints[x].distanceIntoPath = runningDistance;
-        }
-    }
-
     redrawEverything() {
         canvas.width = window.innerHeight - 50;
         canvas.height = window.innerHeight - 50;
 
         this.clear();
         this.drawImage();
-        this.updateWaypointDistances();
         this.drawWaypoints();
         this.robot.drawOntoPath(this.robotDistance, this.waypoints);
     }
@@ -135,7 +120,7 @@ function startAnimation() {
 }
 
 function runAnimation() {
-    renderer.robotDistance += 1;
+    renderer.robotDistance += 0.7;
 
     if (renderer.robotDistance > waypoints[waypoints.length-1].distanceIntoPath) {
         renderer.robotDistance = 0;

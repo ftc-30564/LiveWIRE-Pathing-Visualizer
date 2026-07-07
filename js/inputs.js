@@ -17,32 +17,48 @@ function initializeSidebar() {
                 <div class="coordinates">
                     <label>X:</label>
                     <input type="number" class="waypoint-coordinate" id="x-${i}" value="${waypoints[i].x.toFixed(2)}">
+                    <label class="unit">in</label>
 
                     <label>Y:</label>
                     <input type="number" class="waypoint-coordinate" id="y-${i}"  value="${waypoints[i].y.toFixed(2)}">
+                    <label class="unit">in</label>
 
                     <label>θ:</label>
                     <input type="number" class="waypoint-coordinate" id="theta-${i}" name="theta" value="${waypoints[i].theta.toFixed(2)}">
+                    <label class="unit">in</label>
                 </div>
                 <button onclick='document.getElementById("other-${i}").style.display = "block";'>More</button>
                 <div id="other-${i}" style="display: none;">
 
-                <div class="velocity">
+                <div class="other">
                     <label>Max Vel:</label>
                     <input type="number" class="waypoint-vel" id="maxVelocity-${i}" value="${waypoints[i].maxVelocity.toFixed(2)}">
+                    <label class="unit">in/s</label>
                 </div>
 
-                <div class="acceleration">
+                <div class="other">
                     <label>Accel:</label>
                     <input type="number" class="waypoint-vel" id="maxAcceleration-${i}"value="${waypoints[i].maxAcceleration.toFixed(2)}">
+                    <label class="unit">in/s<sup>2</sup></label>
                 </div>
 
-                <div class="deceleration">
+                <div class="other">
                     <label>Decel:</label>
                     <input type="number" class="waypoint-vel" id="maxDeceleration-${i}" value="${waypoints[i].maxDeceleration.toFixed(2)}">
+                    <label class="unit">in/s<sup>2</sup></label>
                 </div>
 
-                <label id=distance-${i}>${waypoints[i].distanceIntoPath.toFixed(2)} </label>
+                <div class="other">
+                    <label>Ending Vel:</label>
+                    <input type="number" class="waypoint-vel" id="endingVel-${i}" value="${waypoints[i].endingVelocity.toFixed(2)}">
+                    <label class="unit">in/s</label>
+                </div>
+
+                <div class="other">
+                    <label>Ending Tolerance:</label>
+                    <input type="number" class="waypoint-vel" id="tolerance-${i}" value="${waypoints[i].tolerance.toFixed(2)}">
+                    <label class="unit">in</label>
+                </div>
 
                 <button onclick='document.getElementById("other-${i}").style.display = "none";'>Hide</button>
                 </div>
@@ -51,32 +67,40 @@ function initializeSidebar() {
         document.getElementById("waypoints").innerHTML += html;
     }
 
+    // adds event listeners to where anytime the inputs get changed, it updates the waypoint array
     for (let i = 0; i < waypoints.length; i++) {
         waypoints[i].setSidebarElement(document.getElementById(`waypoint-${i}`));
 
         document.getElementById(`x-${i}`).addEventListener("input", (event) => {
             waypoints[i].x = parseFloat(event.target.value);
+            updateWaypointChain();
             renderer.redrawEverything();
         });
         document.getElementById(`y-${i}`).addEventListener("input", (event) => {
             waypoints[i].y = parseFloat(event.target.value);
+            updateWaypointChain();
             renderer.redrawEverything();
         });
         document.getElementById(`theta-${i}`).addEventListener("input", (event) => {
             waypoints[i].theta = parseFloat(event.target.value);
+            updateWaypointChain();
             renderer.redrawEverything();
         });
+
         document.getElementById(`maxVelocity-${i}`).addEventListener("input", (event) => {
             waypoints[i].maxVelocity = parseFloat(event.target.value);
-            renderer.redrawEverything();
         });
         document.getElementById(`maxAcceleration-${i}`).addEventListener("input", (event) => {
             waypoints[i].maxAcceleration = parseFloat(event.target.value);
-            renderer.redrawEverything();
         });
         document.getElementById(`maxDeceleration-${i}`).addEventListener("input", (event) => {
             waypoints[i].maxDeceleration = parseFloat(event.target.value);
-            renderer.redrawEverything();
+        });
+        document.getElementById(`endingVel-${i}`).addEventListener("input", (event) => {
+            waypoints[i].endingVelocity = parseFloat(event.target.value);
+        });
+        document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
+            waypoints[i].tolerance = parseFloat(event.target.value);
         });
     }
 }
@@ -89,7 +113,8 @@ function updateSidebar() {
         document.getElementById(`maxAcceleration-${i}`).value = waypoints[i].maxAcceleration.toFixed(2);
         document.getElementById(`maxDeceleration-${i}`).value = waypoints[i].maxDeceleration.toFixed(2);
         document.getElementById(`maxVelocity-${i}`).value = waypoints[i].maxVelocity.toFixed(2);
-        document.getElementById(`distance-${i}`).innerText = waypoints[i].distanceIntoPath.toFixed(2);
+        document.getElementById(`endingVel-${i}`).value = waypoints[i].endingVelocity.toFixed(2);
+        document.getElementById(`tolerance-${i}`).value = waypoints[i].tolerance.toFixed(2);
     }
 }
 
@@ -112,6 +137,7 @@ canvas.addEventListener('mousemove', (event) => {
     if (state === "dragging" && selectedWaypoint != null) {
         selectedWaypoint.x = mouseX;
         selectedWaypoint.y = mouseY;
+        updateWaypointChain();
         renderer.redrawEverything();
         updateSidebar();
     }
@@ -156,6 +182,7 @@ canvas.addEventListener('mousedown', (event) => {
             if ((state == "idle") && shiftHeld) {
                 // create a new waypoint
                 waypoints.push(new Waypoint(mouseX, mouseY, 0));
+                updateWaypointChain();
                 initializeSidebar();
             }
             if (selectedWaypoint != null) {
@@ -169,6 +196,7 @@ canvas.addEventListener('mousedown', (event) => {
     }
 
     renderer.redrawEverything();
+    updateSidebar();
 });
 
 canvas.addEventListener('mouseup', (event) => {
@@ -200,6 +228,7 @@ document.addEventListener('keydown', (event) => {
             selectedWaypoint.setSelected(true);
             state = "selected";
             initializeSidebar();
+            updateWaypointChain();
             renderer.redrawEverything();
         }
     }
@@ -231,5 +260,6 @@ document.addEventListener('keyup', (event) => {
 document.getElementById("add-waypoint").onclick = () => {
     waypoints.push(new Waypoint(50, 50, 0));
     initializeSidebar();
+    updateWaypointChain();
     renderer.redrawEverything();
 };

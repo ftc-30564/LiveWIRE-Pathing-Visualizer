@@ -12,9 +12,12 @@ class Waypoint {
         this.maxVelocity = DEFAULT_VELOCITY;
         this.maxAcceleration = DEFAULT_ACCEL;
         this.maxDeceleration = DEFAULT_DECEL;
-        this.waypointTolerance = DEFAULT_WAYPOINT_TOLERANCE;
+        this.tolerance = DEFAULT_WAYPOINT_TOLERANCE;
+        this.endingVelocity = 0;
 
         this.selected = false;
+
+        this.dropdownEnabled = false;
 
         this.sidebarElement = null;
 
@@ -41,7 +44,7 @@ class Waypoint {
         return this.theta * (Math.PI / 180);
     }
 
-    angleWith(other) {
+    angleWithRadians(other) {
         return Math.atan2(other.y - this.y, other.x - this.x);
     }
 
@@ -58,4 +61,30 @@ class Waypoint {
     }
 }
 
-var waypoints = [new Waypoint(50, 50, 0)];
+var waypoints = [new Waypoint(50, 50, 0), new Waypoint(75, 75, 45)];
+
+// updates the distances between each waypoint, used for animation
+function updateWaypointDistances() {
+    let runningDistance = 0;
+    for (let x = 1; x < this.waypoints.length; x ++) {
+        runningDistance += this.waypoints[x].distanceFrom(this.waypoints[x-1]);
+        this.waypoints[x].distanceIntoPath = runningDistance;
+    }
+}
+
+function updateWaypointEndingVelocities() {
+    this.waypoints[0].endingVelocity = 0;
+    this.waypoints[this.waypoints.length-1].endingVelocity = 0;
+
+    for (let x = 1; x < this.waypoints.length-1; x++) {
+        let angleDifference = this.waypoints[x].angleWithRadians(this.waypoints[x+1]) - this.waypoints[x-1].angleWithRadians(this.waypoints[x]);
+        this.waypoints[x].endingVelocity = (Math.abs(Math.cos(angleDifference / 2))) * this.waypoints[x].maxVelocity;
+    }
+}
+
+// any time a new waypoint is created, or waypoints are moved, this should be called.
+// this updates the distances and ending velocities between the two 
+function updateWaypointChain() {
+    this.updateWaypointDistances();
+    this.updateWaypointEndingVelocities();
+}
