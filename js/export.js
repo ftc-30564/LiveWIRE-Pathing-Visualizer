@@ -8,7 +8,7 @@ class Export {
 
         for (let x = 0; x < path.waypoints.length; x ++) {
             // TODO: use waypoint.name when added
-            ret += `\n\t\tWaypoint ${path.waypoints[x].name} = new Waypoint(new Pose2d(${path.waypoints[x].x}, ${path.waypoints[x].y}, Math.toRadians(${path.waypoints[x].theta})), ${path.waypoints[x].maxAcceleration}, ${path.waypoints[x].maxDeceleration}, ${path.waypoints[x].maxVelocity}, ${path.waypoints[x].endingVelocity});`;
+            ret += `\n\t\tWaypoint ${path.waypoints[x].name} = new Waypoint(new Pose2d(${path.waypoints[x].x}, ${path.waypoints[x].y}, Math.toRadians(${path.waypoints[x].theta})), ${path.waypoints[x].maxAcceleration}, ${path.waypoints[x].maxDeceleration}, ${path.waypoints[x].maxVelocity}, ${path.waypoints[x].endingVelocity}, ${path.waypoints[x].tolerance});`;
         }
         
 
@@ -18,6 +18,21 @@ class Export {
             ret += `\n\t\t\t.addWaypoint(${path.waypoints[x].name})`
         }
         ret += ";";
+
+        return ret;
+    }
+
+    exportJson(path) {
+        let strippedWaypoints = [];
+
+        path.waypoints.forEach(waypoint => {
+            strippedWaypoints.push(new StrippedWaypoint(waypoint));
+        });
+
+        var ret = {
+            "name": "Path1",
+            "waypoints": strippedWaypoints
+        };
 
         return ret;
     }

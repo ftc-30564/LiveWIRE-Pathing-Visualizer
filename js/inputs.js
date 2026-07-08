@@ -192,3 +192,37 @@ document.getElementById("settings-exit").onclick = () => {
     document.getElementById("settings").style.display = "none";
     document.getElementById("main").style.opacity = "100%";
 }
+
+const uploadButton = document.getElementById('upload-btn');
+
+// MARK: JSON
+uploadButton.addEventListener('click', async () => {
+    try {
+        const jsonData = await window.electronAPI.selectAndReadJson();
+    
+        if (jsonData) {
+            alert("Successfully loaded JSON");
+        // Do something with your data here (e.g., update the DOM)
+        } 
+        else {
+            alert("cancelled");
+        }
+    } 
+    catch (error) {
+        alert("Error reading the JSON file. Make sure it is valid JSON format.");
+    }
+});
+
+const exportButton = document.getElementById('export-btn');
+
+exportButton.addEventListener('click', async () => {
+
+    const response = await window.electronAPI.exportJSON(exporter.exportJson(currentPath));
+
+    if (response.success) {
+        alert(`File exported successfully to: ${response.filePath}`);
+    } 
+    else {
+        alert(`Export failed: ${response.error || response.message}`);
+    }
+});

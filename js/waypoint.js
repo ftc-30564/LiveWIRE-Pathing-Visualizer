@@ -59,3 +59,19 @@ class Waypoint {
         }
     }
 }
+
+// version of Waypoint used solely for exporting as json
+class StrippedWaypoint {
+    constructor(waypoint) {
+        this.name = waypoint.name;
+        this.x = waypoint.x;
+        this.y = waypoint.y;
+        this.theta = waypoint.theta;
+
+        this.maxVelocity = +waypoint.maxVelocity;
+        this.maxAcceleration = +waypoint.maxAcceleration;
+        this.maxDeceleration = +waypoint.maxDeceleration;
+        this.endingVelocity = +waypoint.endingVelocity;
+        this.tolerance = +waypoint.tolerance;
+    }
+}

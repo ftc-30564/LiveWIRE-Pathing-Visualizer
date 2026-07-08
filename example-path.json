@@ -1,0 +1,16 @@
+{
+    "name": "Path1",
+    "waypoints": {
+        "Waypoint1": {
+            "x": 50,
+            "y": 50,
+            "maxVelocity": 60
+        },
+        "Waypoint2": {
+            "x": 50,
+            "y": 50,
+            "maxVelocity": 60,
+            "pathBreak": true
+        }
+    }
+}
