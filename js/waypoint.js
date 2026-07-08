@@ -11,6 +11,14 @@ class Waypoint {
         this.tolerance = Settings.getToleranceDefault();
         this.endingVelocity = 0;
 
+        this.timeToAccelerate = 0;
+        this.timeToCruise = 0;
+        this.timeToDecelerate = 0;
+
+        this.distanceToAccelerate = 0;
+        this.distanceToCruise = 0;
+        this.distanceToDecelerate = 0;
+
         this.selected = false;
         this.dropdownEnabled = false;
 

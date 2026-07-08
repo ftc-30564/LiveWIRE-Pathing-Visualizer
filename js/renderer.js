@@ -93,6 +93,7 @@ class Animator {
     constructor(renderer) {
         this.renderer = renderer;
         this.running = false;
+        this.startTime = 0;
     }
 
     toggleAnimation() {
@@ -104,21 +105,24 @@ class Animator {
     }
 
     resetAnimation() {
-        this.renderer.robotDistance = 0;
+        this.startTime = 0;
         this.running = false;
         this.renderer.redrawEverything();
+        currentPath.computeTimeSegments();
     }
 
     startAnimation() {
         if (this.running) {
             return;
         }
+        currentPath.computeTimeSegments();
         this.running = true;
-        requestAnimationFrame(() => this.runAnimation());
+        this.startTime = performance.now();
+        requestAnimationFrame(() => this.runAnimationTime());
     }
 
-    runAnimation() {
-        this.renderer.robotDistance += 0.7;
+    runAnimationDistance() {
+        this.renderer.robotDistance += 0.7;        
 
         if (this.renderer.robotDistance > this.renderer.currentPath.waypoints[this.renderer.currentPath.waypoints.length-1].distanceIntoPath) {
             this.renderer.robotDistance = 0;
@@ -127,7 +131,23 @@ class Animator {
         this.renderer.redrawEverything();
 
         if (this.running) {
-            requestAnimationFrame(() => this.runAnimation());
+            requestAnimationFrame(() => this.runAnimationDistance());
+        }
+    }
+
+    runAnimationTime() {
+        let time = (performance.now() - this.startTime) / 1000;
+
+        this.renderer.robotDistance = currentPath.getDistanceAlongPath(time);
+        this.renderer.redrawEverything();
+        
+
+        if (time > currentPath.totalAnimationTime) {
+            this.startTime = performance.now();
+        }
+
+        if (this.running) {
+            requestAnimationFrame(() => this.runAnimationTime());
         }
     }
 
