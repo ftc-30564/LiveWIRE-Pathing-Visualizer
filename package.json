@@ -13,5 +13,8 @@
   "type": "commonjs",
   "devDependencies": {
     "electron": "^43.0.0"
+  },
+  "dependencies": {
+    "electron-store": "^11.0.2"
   }
 }

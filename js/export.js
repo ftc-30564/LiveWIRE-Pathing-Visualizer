@@ -3,38 +3,39 @@ class Export {
         this.displayingJava = false;
     }
 
-    exportJava() {
+    exportJava(path) {
         let ret = "";
 
-        for (let x = 0; x < waypoints.length; x ++) {
+        for (let x = 0; x < path.waypoints.length; x ++) {
             // TODO: use waypoint.name when added
-            ret += `\n\t\tWaypoint ${waypoints[x].name} = new Waypoint(new Pose2d(${waypoints[x].x}, ${waypoints[x].y}, Math.toRadians(${waypoints[x].theta})), ${waypoints[x].maxAcceleration}, ${waypoints[x].maxDeceleration}, ${waypoints[x].maxVelocity}, ${waypoints[x].endingVelocity});`;
+            ret += `\n\t\tWaypoint ${path.waypoints[x].name} = new Waypoint(new Pose2d(${path.waypoints[x].x}, ${path.waypoints[x].y}, Math.toRadians(${path.waypoints[x].theta})), ${path.waypoints[x].maxAcceleration}, ${path.waypoints[x].maxDeceleration}, ${path.waypoints[x].maxVelocity}, ${path.waypoints[x].endingVelocity});`;
         }
         
 
-        ret += `\n\n\t\tPath path = new Path(${waypoints[0].name})`;
+        ret += `\n\n\t\tPath path = new Path(${path.waypoints[0].name})`;
 
-        for (let x = 1; x < waypoints.length; x++) {
-            ret += `\n\t\t\t.addWaypoint(${waypoints[x].name})`
+        for (let x = 1; x < path.waypoints.length; x++) {
+            ret += `\n\t\t\t.addWaypoint(${path.waypoints[x].name})`
         }
         ret += ";";
 
         return ret;
     }
 
-    toggleJava() {
+    toggleJava(path) {
         if (!this.displayingJava) {
-            this.showJava();
+            this.showJava(path);
         }
         else {
             this.hideJava();
         }
     }
 
-    showJava() {
+    // TODO probaby should be in main
+    showJava(path) {
         this.displayingJava = true;
         document.getElementById("java-generation").style.display = "block";
-        document.getElementById("java-code").innerText = this.exportJava();
+        document.getElementById("java-code").innerText = this.exportJava(path);
         document.getElementById("main").style.opacity = "70%";
     }
 
@@ -44,5 +45,3 @@ class Export {
         document.getElementById("main").style.opacity = "100%";
     }
 }
-
-const exporter = new Export();

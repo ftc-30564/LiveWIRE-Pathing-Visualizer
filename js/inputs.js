@@ -1,136 +1,59 @@
-const WAYPOINT_TOLERANCE = 3;
 
+// inputs
 var state = "idle"; // idle, dragging, selecting, selected
-
-var selectedWaypoint = null;
-var startingWaypoint = null;
-
+var selectedWaypointIndex = null;
 var shiftHeld = false;
 
-function initializeSidebar() {
-    document.getElementById("waypoints").innerHTML = "";
-
-    for (let i = 0; i < waypoints.length; i++) {
-        let html = `
-                <div class="waypoint" id="waypoint-${i}">
-                <input type="text" class="waypoint-name" id="name-${i}" value="Waypoint${i}"></input>
-                <div class="coordinates">
-                    <label>X:</label>
-                    <input type="number" class="waypoint-coordinate" id="x-${i}" value="${waypoints[i].x.toFixed(2)}">
-                    <label class="unit">in</label>
-
-                    <label>Y:</label>
-                    <input type="number" class="waypoint-coordinate" id="y-${i}"  value="${waypoints[i].y.toFixed(2)}">
-                    <label class="unit">in</label>
-
-                    <label>θ:</label>
-                    <input type="number" class="waypoint-coordinate" id="theta-${i}" name="theta" value="${waypoints[i].theta.toFixed(2)}">
-                    <label class="unit">deg</label>
-                </div>
-                <button onclick='document.getElementById("other-${i}").style.display = "block";'>More</button>
-                <div id="other-${i}" style="display: none;">
-
-                <div class="other">
-                    <label>Max Vel:</label>
-                    <input type="number" class="waypoint-vel" id="maxVelocity-${i}" value="${waypoints[i].maxVelocity.toFixed(2)}">
-                    <label class="unit">in/s</label>
-                </div>
-
-                <div class="other">
-                    <label>Accel:</label>
-                    <input type="number" class="waypoint-vel" id="maxAcceleration-${i}"value="${waypoints[i].maxAcceleration.toFixed(2)}">
-                    <label class="unit">in/s<sup>2</sup></label>
-                </div>
-
-                <div class="other">
-                    <label>Decel:</label>
-                    <input type="number" class="waypoint-vel" id="maxDeceleration-${i}" value="${waypoints[i].maxDeceleration.toFixed(2)}">
-                    <label class="unit">in/s<sup>2</sup></label>
-                </div>
-
-                <div class="other">
-                    <label>Ending Vel:</label>
-                    <input type="number" class="waypoint-vel" id="endingVel-${i}" value="${waypoints[i].endingVelocity.toFixed(2)}">
-                    <label class="unit">in/s</label>
-                </div>
-
-                <div class="other">
-                    <label>Ending Tolerance:</label>
-                    <input type="number" class="waypoint-vel" id="tolerance-${i}" value="${waypoints[i].tolerance.toFixed(2)}">
-                    <label class="unit">in</label>
-                </div>
-
-                <button onclick='document.getElementById("other-${i}").style.display = "none";'>Hide</button>
-                </div>
-            </div>`
-
-        document.getElementById("waypoints").innerHTML += html;
-    }
-
-    // adds event listeners to where anytime the inputs get changed, it updates the waypoint array
-    for (let i = 0; i < waypoints.length; i++) {
-        waypoints[i].setSidebarElement(document.getElementById(`waypoint-${i}`));
-
+// adds event listeners to where anytime the inputs on the sidebar get changed, it updates the waypoint array, and redraws waypoints
+function addEventListenersToSidebarInputs() {
+    for (let i = 0; i < this.currentPath.waypoints.length; i++) {
         document.getElementById(`name-${i}`).addEventListener("input", (event) => {
-            waypoints[i].name = event.target.value;
+            this.currentPath.waypoints[i].name = event.target.value;
         })
 
         document.getElementById(`x-${i}`).addEventListener("input", (event) => {
-            waypoints[i].x = parseFloat(event.target.value);
-            updateWaypointChain();
-            renderer.redrawEverything();
+            this.currentPath.waypoints[i].x = parseFloat(event.target.value);
+            this.currentPath.updateWaypointChain();
+            this.renderer.redrawEverything();
         });
         document.getElementById(`y-${i}`).addEventListener("input", (event) => {
-            waypoints[i].y = parseFloat(event.target.value);
-            updateWaypointChain();
-            renderer.redrawEverything();
+            this.currentPath.waypoints[i].y = parseFloat(event.target.value);
+            this.currentPath.updateWaypointChain();
+            this.renderer.redrawEverything();
         });
         document.getElementById(`theta-${i}`).addEventListener("input", (event) => {
-            waypoints[i].theta = parseFloat(event.target.value);
-            updateWaypointChain();
-            renderer.redrawEverything();
+            this.currentPath.waypoints[i].theta = parseFloat(event.target.value);
+            this.currentPath.updateWaypointChain();
+            this.renderer.redrawEverything();
         });
 
         document.getElementById(`maxVelocity-${i}`).addEventListener("input", (event) => {
-            waypoints[i].maxVelocity = parseFloat(event.target.value);
+            this.currentPath.waypoints[i].maxVelocity = parseFloat(event.target.value);
         });
         document.getElementById(`maxAcceleration-${i}`).addEventListener("input", (event) => {
-            waypoints[i].maxAcceleration = parseFloat(event.target.value);
+            this.currentPath.waypoints[i].maxAcceleration = parseFloat(event.target.value);
         });
         document.getElementById(`maxDeceleration-${i}`).addEventListener("input", (event) => {
-            waypoints[i].maxDeceleration = parseFloat(event.target.value);
+            this.currentPath.waypoints[i].maxDeceleration = parseFloat(event.target.value);
         });
         document.getElementById(`endingVel-${i}`).addEventListener("input", (event) => {
-            waypoints[i].endingVelocity = parseFloat(event.target.value);
+            this.currentPath.waypoints[i].endingVelocity = parseFloat(event.target.value);
         });
         document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
-            waypoints[i].tolerance = parseFloat(event.target.value);
+            this.currentPath.waypoints[i].tolerance = parseFloat(event.target.value);
         });
     }
 }
 
-function updateSidebar() {
-    for (let i = 0; i < waypoints.length; i++) {
-        document.getElementById(`x-${i}`).value = waypoints[i].x.toFixed(2);
-        document.getElementById(`y-${i}`).value = waypoints[i].y.toFixed(2);
-        document.getElementById(`theta-${i}`).value = waypoints[i].theta.toFixed(2);
-        document.getElementById(`maxAcceleration-${i}`).value = waypoints[i].maxAcceleration.toFixed(2);
-        document.getElementById(`maxDeceleration-${i}`).value = waypoints[i].maxDeceleration.toFixed(2);
-        document.getElementById(`maxVelocity-${i}`).value = waypoints[i].maxVelocity.toFixed(2);
-        document.getElementById(`endingVel-${i}`).value = waypoints[i].endingVelocity.toFixed(2);
-        document.getElementById(`tolerance-${i}`).value = waypoints[i].tolerance.toFixed(2);
-    }
-}
 
-initializeSidebar();
-
+// MARK: Mouse Inputs
 canvas.addEventListener('mousemove', (event) => {
     // Get the bounding rectangle of the canvas
     const rect = canvas.getBoundingClientRect();
     
     // Calculate mouse coordinates relative to the canvas
-    const mouseX = convertXPixelsToInches(event.clientX - rect.left);
-    const mouseY = convertYPixelsToInches(event.clientY - rect.top);
+    const mouseX = Renderer.convertXPixelsToInches(event.clientX - rect.left);
+    const mouseY = Renderer.convertYPixelsToInches(event.clientY - rect.top);
 
     // if the mouse was clicked down on a waypoint but not moved yet
     if (state === "selecting") {
@@ -138,22 +61,20 @@ canvas.addEventListener('mousemove', (event) => {
     }
 
     // if it's dragging a waypoint
-    if (state === "dragging" && selectedWaypoint != null) {
-        selectedWaypoint.x = mouseX;
-        selectedWaypoint.y = mouseY;
-        updateWaypointChain();
+    if (state === "dragging" && currentPath.selectedWaypointIndex != null) {
+        currentPath.moveWaypoint(currentPath.selectedWaypointIndex, mouseX, mouseY);
         renderer.redrawEverything();
-        updateSidebar();
+        sidebar.updateSidebar();
     }
     else {
         // check if the mouse is hovering over any of the waypoints
         // if so, change mouse to pointer
-        for (let x = 0; x < waypoints.length; x ++) {
-            if (isWithinSquare(mouseX, mouseY, waypoints[x].x, waypoints[x].y, WAYPOINT_TOLERANCE)) {
+        for (let x = 0; x < currentPath.waypoints.length; x ++) {
+            if (Renderer.isWithinSquare(mouseX, mouseY, currentPath.waypoints[x].x, currentPath.waypoints[x].y, WAYPOINT_TOLERANCE)) {
                 document.body.style.cursor = 'pointer';
                 break;
             }
-            if (x === waypoints.length - 1) {
+            if (x === currentPath.waypoints.length - 1) {
                 document.body.style.cursor = 'default';
             }
         }
@@ -165,48 +86,38 @@ canvas.addEventListener('mousedown', (event) => {
     const rect = canvas.getBoundingClientRect();
 
     // Calculate mouse coordinates relative to the field
-    const mouseX = convertXPixelsToInches(event.clientX - rect.left);
-    const mouseY = convertYPixelsToInches(event.clientY - rect.top);
+    const mouseX = Renderer.convertXPixelsToInches(event.clientX - rect.left);
+    const mouseY = Renderer.convertYPixelsToInches(event.clientY - rect.top);
 
-    for (let x = 0; x < waypoints.length; x ++) {
+    for (let x = 0; x < currentPath.waypoints.length; x ++) {
         // if the user click is on a waypoint
-        if (isWithinSquare(mouseX, mouseY, waypoints[x].x, waypoints[x].y, WAYPOINT_TOLERANCE)) {
-            if (selectedWaypoint != null) {
-                selectedWaypoint.setSelected(false);
-            }
-            selectedWaypoint = waypoints[x];
-            selectedWaypoint.setSelected(true);
-            startingWaypoint = selectedWaypoint;
+        if (Renderer.isWithinSquare(mouseX, mouseY, currentPath.waypoints[x].x, currentPath.waypoints[x].y, WAYPOINT_TOLERANCE)) {
+            currentPath.selectWaypoint(x);
             state = "selecting";
             break;
         }
 
         // if the user click isn't on a waypoint
-        if (x === waypoints.length - 1) {
+        if (x === currentPath.waypoints.length - 1) {
             if ((state == "idle") && shiftHeld) {
                 // create a new waypoint
-                waypoints.push(new Waypoint(mouseX, mouseY, 0));
-                updateWaypointChain();
-                initializeSidebar();
+                currentPath.addWaypoint(new Waypoint(mouseX, mouseY, 0).withName(`Waypoint${currentPath.waypoints.length}`));
+                sidebar.initializeSidebar();
+                addEventListenersToSidebarInputs();
             }
-            if (selectedWaypoint != null) {
-                // reset any selected
-                selectedWaypoint.setSelected(false);
-            }
-            selectedWaypoint = null;
+            currentPath.deselectWaypoint();
             state = "idle";
             break;
         }
     }
 
     renderer.redrawEverything();
-    updateSidebar();
+    sidebar.updateSidebar();
 });
 
 canvas.addEventListener('mouseup', (event) => {
     if (state === "dragging") {
-        selectedWaypoint.setSelected(false);
-        selectedWaypoint = null;
+        currentPath.deselectWaypoint();
         state = "idle";
         renderer.redrawEverything();
     }
@@ -214,25 +125,25 @@ canvas.addEventListener('mouseup', (event) => {
         state = "selected";
     }
     else if (state == "selected") {
-        selectedWaypoint.setSelected(false);
-        selectedWaypoint = null;
+        currentPath.deselectWaypoint();
         state = "idle";
     }
 });
 
+// MARK: Key Inputs
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Delete' || event.key == 'Backspace') {
-        if (waypoints.length == 1) {
+        if (currentPath.waypoints.length == 1) {
             return;
         }
         if (state == "selected" || state == "selecting") {
             // remove the selected waypoint
-            waypoints.splice(waypoints.indexOf(selectedWaypoint), 1);
-            selectedWaypoint = waypoints[waypoints.length-1];
-            selectedWaypoint.setSelected(true);
+            currentPath.removeSelectedWaypoint();
+            currentPath.selectWaypoint(currentPath.waypoints.length - 1);
             state = "selected";
-            initializeSidebar();
-            updateWaypointChain();
+            sidebar.initializeSidebar();
+            addEventListenersToSidebarInputs();
+            animator.resetAnimation();
             renderer.redrawEverything();
         }
     }
@@ -242,20 +153,19 @@ document.addEventListener('keydown', (event) => {
     }
 
     if (event.key == 'b') {
-        toggleAnimation();
-        //animationId = requestAnimationFrame(animateRobot(waypoints));
+        animator.toggleAnimation();
     }
 
     if (event.key == 'n') {
-        stopAnimation();
+        animator.stopAnimation();
     }
 
     if (event.key == 'r') {
-        resetAnimation();
+        animator.resetAnimation();
     }
 
     if (event.key == 'j') {
-        exporter.toggleJava();
+        exporter.toggleJava(currentPath);
     }
 });
 
@@ -266,8 +176,19 @@ document.addEventListener('keyup', (event) => {
 })
 
 document.getElementById("add-waypoint").onclick = () => {
-    waypoints.push(new Waypoint(50, 50, 0));
-    initializeSidebar();
-    updateWaypointChain();
+    currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`Waypoint${currentPath.waypoints.length}`));
+    sidebar.initializeSidebar();
+    addEventListenersToSidebarInputs();
     renderer.redrawEverything();
 };
+
+// MARK: Settings
+document.getElementById("settings-button").onclick = () => {
+    document.getElementById("settings").style.display = "block";
+    document.getElementById("main").style.opacity = "80%";
+}
+
+document.getElementById("settings-exit").onclick = () => {
+    document.getElementById("settings").style.display = "none";
+    document.getElementById("main").style.opacity = "100%";
+}

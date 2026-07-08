@@ -1,8 +1,3 @@
-const DEFAULT_VELOCITY = 40;
-const DEFAULT_ACCEL = 50;
-const DEFAULT_DECEL = 50;
-const DEFAULT_WAYPOINT_TOLERANCE = 3;
-
 class Waypoint {
     constructor(x, y, theta) {
         this.x = x;
@@ -10,19 +5,22 @@ class Waypoint {
         this.theta = theta;
 
         this.name = "Waypoint";
-        this.maxVelocity = DEFAULT_VELOCITY;
-        this.maxAcceleration = DEFAULT_ACCEL;
-        this.maxDeceleration = DEFAULT_DECEL;
-        this.tolerance = DEFAULT_WAYPOINT_TOLERANCE;
+        this.maxVelocity = Settings.getMaxVelocityDefault();
+        this.maxAcceleration = Settings.getMaxAccelDefault();
+        this.maxDeceleration = Settings.getMaxDecelDefault();
+        this.tolerance = Settings.getToleranceDefault();
         this.endingVelocity = 0;
 
         this.selected = false;
-
         this.dropdownEnabled = false;
 
-        this.sidebarElement = null;
-
         this.distanceIntoPath = 0;
+    }
+
+    withName(name) {
+        let ret = new Waypoint(this.x, this.y, this.theta);
+        ret.name = name;
+        return ret;
     }
 
     setSidebarElement(element) {
@@ -60,32 +58,4 @@ class Waypoint {
             }
         }
     }
-}
-
-var waypoints = [new Waypoint(50, 50, 0), new Waypoint(75, 75, 45)];
-
-// updates the distances between each waypoint, used for animation
-function updateWaypointDistances() {
-    let runningDistance = 0;
-    for (let x = 1; x < this.waypoints.length; x ++) {
-        runningDistance += this.waypoints[x].distanceFrom(this.waypoints[x-1]);
-        this.waypoints[x].distanceIntoPath = runningDistance;
-    }
-}
-
-function updateWaypointEndingVelocities() {
-    this.waypoints[0].endingVelocity = 0;
-    this.waypoints[this.waypoints.length-1].endingVelocity = 0;
-
-    for (let x = 1; x < this.waypoints.length-1; x++) {
-        let angleDifference = this.waypoints[x].angleWithRadians(this.waypoints[x+1]) - this.waypoints[x-1].angleWithRadians(this.waypoints[x]);
-        this.waypoints[x].endingVelocity = (Math.abs(Math.cos(angleDifference / 2))) * this.waypoints[x].maxVelocity;
-    }
-}
-
-// any time a new waypoint is created, or waypoints are moved, this should be called.
-// this updates the distances and ending velocities between the two 
-function updateWaypointChain() {
-    this.updateWaypointDistances();
-    this.updateWaypointEndingVelocities();
 }

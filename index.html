@@ -9,7 +9,7 @@
 </head>
 <body>
     <div id="top">
-
+        <p style="padding: 5px; margin-left: 10px; cursor: pointer;" id="settings-button">Settings</p>
     </div>
     <div id="main">
         <div id="sidebar">
@@ -23,15 +23,55 @@
         </div>
     </div>
 
+    <div id="settings">
+        <p id="settings-exit" style="cursor: pointer; text-align: right;">Exit</p>
+        <h2 style="text-align: center; border-bottom: 2px solid rgb(64, 64, 64);">Settings</h2>
+
+        <div class="other">
+            <label>Default Max Velocity:</label>
+            <input type="number" id="settings-vel">
+            <label class="unit">in/s</label>
+        </div>
+
+        <div class="other">
+            <label>Default Max Accel:</label>
+            <input type="number" id="settings-accel">
+            <label class="unit">in/s<sup>2</sup></label>
+        </div>
+
+        <div class="other">
+            <label>Default Max Decel:</label>
+            <input type="number" id="settings-decel">
+            <label class="unit">in/s<sup>2</sup></label>
+        </div>
+
+        <div class="other">
+            <label>Default Waypoint Tolerance:</label>
+            <input type="number" id="settings-tolerance">
+            <label class="unit">in</label>
+        </div>
+
+        <div class="other">
+            <label>Slowdown Ratio:</label>
+            <input type="number" id="settings-slowdown">
+        </div>
+
+        <button id="save-settings">Save</button>
+    </div>
+
     <div id="java-generation">
         <pre><code id="java-code"></code></pre>
     </div>
 
+    <script src="js/settings.js"></script>
     <script src="js/waypoint.js"></script>
+    <script src="js/path.js"></script>
     <script src="js/robot.js"></script>
     <script src="js/renderer.js"></script>
+    <script src="js/sidebar.js"></script>
     <script src="js/export.js"></script>
 
+    <script src="js/main.js"></script>
     <script src="js/inputs.js"></script>
 </body>
 </html>

@@ -11,8 +11,8 @@ class Robot {
         ctx.save();
 
         ctx.translate(
-            convertXInchesToPixels(waypoint.x), 
-            convertYInchesToPixels(waypoint.y)
+            Renderer.convertXInchesToPixels(waypoint.x), 
+            Renderer.convertYInchesToPixels(waypoint.y)
         );
 
         ctx.rotate((-(waypoint.theta - 90) * Math.PI) / 180);
@@ -63,8 +63,6 @@ class Robot {
                 }
             }
         }
-
-
         // next, figure out what x and y the robot should be at
         let robotX = lastWaypoint.x + (Math.cos(lastWaypoint.angleWithRadians(nextWaypoint)) * (distance - lastWaypoint.distanceIntoPath));
         let robotY = lastWaypoint.y + (Math.sin(lastWaypoint.angleWithRadians(nextWaypoint)) * (distance - lastWaypoint.distanceIntoPath));
