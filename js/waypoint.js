@@ -11,7 +11,7 @@ class Waypoint {
         this.tolerance = Settings.getToleranceDefault();
         this.endingVelocity = 0;
 
-        this.timeToAccelerate = 0;
+        this.timeAtAccelerationEnd = 0;
         this.timeToCruise = 0;
         this.timeToDecelerate = 0;
 
@@ -28,6 +28,18 @@ class Waypoint {
     withName(name) {
         let ret = new Waypoint(this.x, this.y, this.theta);
         ret.name = name;
+        return ret;
+    }
+
+    static fromJson(obj) {
+        let ret = new Waypoint(obj.x, obj.y, obj.theta);
+
+        ret.name = obj.name;
+        ret.maxVelocity = obj.maxVelocity;
+        ret.maxAcceleration = obj.maxAcceleration;
+        ret.endingVelocity = obj.endingVelocity;
+        ret.tolerance = obj.tolerance;
+
         return ret;
     }
 

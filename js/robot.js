@@ -49,7 +49,7 @@ class Robot {
             lastWaypoint = waypoints[0];
             nextWaypoint = waypoints[0];
         }
-        if (waypoints.length == 2) {
+        else if (waypoints.length == 2) {
             lastWaypoint = waypoints[0];
             nextWaypoint = waypoints[1];
         }
@@ -60,6 +60,12 @@ class Robot {
                     lastWaypoint = waypoints[x-1];
                     nextWaypoint = waypoints[x];
                     break;
+                }
+
+                if (x == waypoints.length-1) {
+                    // alert("no waypoint found, given distance is " + distance);
+                    lastWaypoint = waypoints[waypoints.length-2];
+                    nextWaypoint = waypoints[waypoints.length-1];
                 }
             }
         }

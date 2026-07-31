@@ -201,12 +201,28 @@ uploadButton.addEventListener('click', async () => {
         const jsonData = await window.electronAPI.selectAndReadJson();
     
         if (jsonData) {
-            alert("Successfully loaded JSON");
+
+            try {
+                this.currentPath.waypoints = [];
+
+                // alert(jsonData.waypoints[0].x);
+
+
+                jsonData.waypoints.forEach(element => {
+
+                    currentPath.addWaypoint(Waypoint.fromJson(element));
+                });
+                sidebar.initializeSidebar();
+                addEventListenersToSidebarInputs();
+                renderer.redrawEverything();
+
+                alert("Successfully loaded JSON");
+            }
+            catch (error) {
+                alert("Unable to load, there might be an error of some sorts");
+            }
         // Do something with your data here (e.g., update the DOM)
         } 
-        else {
-            alert("cancelled");
-        }
     } 
     catch (error) {
         alert("Error reading the JSON file. Make sure it is valid JSON format.");
