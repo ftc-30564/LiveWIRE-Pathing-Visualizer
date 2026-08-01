@@ -11,11 +11,11 @@ class Robot {
         ctx.save();
 
         ctx.translate(
-            Renderer.convertXInchesToPixels(waypoint.x), 
-            Renderer.convertYInchesToPixels(waypoint.y)
+            Renderer.convertXInchesToPixels(waypoint.getAbsoluteWaypoint().x), 
+            Renderer.convertYInchesToPixels(waypoint.getAbsoluteWaypoint().y)
         );
 
-        ctx.rotate((-(waypoint.theta - 90) * Math.PI) / 180);
+        ctx.rotate((-(waypoint.getAbsoluteWaypoint().theta - 90) * Math.PI) / 180);
 
         ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
 
@@ -46,26 +46,26 @@ class Robot {
         let lastWaypoint;
         let nextWaypoint;
         if (waypoints.length == 1) {
-            lastWaypoint = waypoints[0];
-            nextWaypoint = waypoints[0];
+            lastWaypoint = waypoints[0].getAbsoluteWaypoint();
+            nextWaypoint = waypoints[0].getAbsoluteWaypoint();
         }
         else if (waypoints.length == 2) {
-            lastWaypoint = waypoints[0];
-            nextWaypoint = waypoints[1];
+            lastWaypoint = waypoints[0].getAbsoluteWaypoint();
+            nextWaypoint = waypoints[1].getAbsoluteWaypoint();
         }
         else {
             for (let x = 1; x < waypoints.length; x ++) {
                 if (waypoints[x].distanceIntoPath > distance) {
                     //alert("distance is " + distance + ", waypoint last is " + (x-1));
-                    lastWaypoint = waypoints[x-1];
-                    nextWaypoint = waypoints[x];
+                    lastWaypoint = waypoints[x-1].getAbsoluteWaypoint();
+                    nextWaypoint = waypoints[x].getAbsoluteWaypoint();
                     break;
                 }
 
                 if (x == waypoints.length-1) {
                     // alert("no waypoint found, given distance is " + distance);
-                    lastWaypoint = waypoints[waypoints.length-2];
-                    nextWaypoint = waypoints[waypoints.length-1];
+                    lastWaypoint = waypoints[x-1].getAbsoluteWaypoint();
+                    nextWaypoint = waypoints[x].getAbsoluteWaypoint();
                 }
             }
         }

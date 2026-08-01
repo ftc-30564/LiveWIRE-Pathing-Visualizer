@@ -22,6 +22,14 @@ class Waypoint {
         this.selected = false;
         this.dropdownEnabled = false;
 
+        this.linked = false;
+        this.linkedWaypoint = null;
+
+        this.endingVelocityLocked = false; // if true, the ending velocity will not be updated when updateWaypointEndingVelocities() is called
+
+        // if it is the last waypoint in a path
+        this.isPathBreak = false;
+
         this.distanceIntoPath = 0;
     }
 
@@ -29,6 +37,51 @@ class Waypoint {
         let ret = new Waypoint(this.x, this.y, this.theta);
         ret.name = name;
         return ret;
+    }
+
+    linkTo(other) {
+        this.linked = true;
+        this.linkedWaypoint = other;
+    }
+
+    unlink() {
+        this.linked = false;
+        this.linkedWaypoint = null;
+    }
+
+    // returns the absolute position of the waypoint, taking into account if the waypoint is linked to anything
+    getAbsoluteWaypoint() {
+        if (this.linked) {
+            return this.add(this.linkedWaypoint.getAbsoluteWaypoint());
+        }
+        return this;
+    }
+
+    setAbsoluteX(x) {
+        if (this.linked) {
+            this.x = x - this.linkedWaypoint.getAbsoluteWaypoint().x;
+        }
+        else {
+            this.x = x;
+        }
+    }
+
+    setAbsoluteY(y) {
+        if (this.linked) {
+            this.y = y - this.linkedWaypoint.getAbsoluteWaypoint().y;
+        }
+        else {
+            this.y = y;
+        }
+    }
+
+    setAbsoluteTheta(theta) {
+        if (this.linked) {
+            this.theta = theta - this.linkedWaypoint.getAbsoluteWaypoint().theta;
+        }
+        else {
+            this.theta = theta;
+        }
     }
 
     static fromJson(obj) {
@@ -39,6 +92,7 @@ class Waypoint {
         ret.maxAcceleration = obj.maxAcceleration;
         ret.endingVelocity = obj.endingVelocity;
         ret.tolerance = obj.tolerance;
+        ret.isPathBreak = obj.isPathBreak;
 
         return ret;
     }
@@ -56,7 +110,7 @@ class Waypoint {
     }
 
     distanceFrom(other) {
-        return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2))
+        return Math.sqrt(Math.pow(this.getAbsoluteWaypoint().x - other.getAbsoluteWaypoint().x, 2) + Math.pow(this.getAbsoluteWaypoint().y - other.getAbsoluteWaypoint().y, 2))
     }
 
     getAngleRadians() {
@@ -64,14 +118,14 @@ class Waypoint {
     }
 
     angleWithRadians(other) {
-        return Math.atan2(other.y - this.y, other.x - this.x);
+        return Math.atan2(other.getAbsoluteWaypoint().y - this.getAbsoluteWaypoint().y, other.getAbsoluteWaypoint().x - this.getAbsoluteWaypoint().x);
     }
 
     setSelected(selected) {
         this.selected = selected;
         if (this.sidebarElement != null) {
             if (this.selected) {
-                this.sidebarElement.style.border = "3px solid yellow";
+                this.sidebarElement.style.border = "3px solid rgb(0, 143, 238)";
             }
             else {
                 this.sidebarElement.style.border = "none";
@@ -93,5 +147,9 @@ class StrippedWaypoint {
         this.maxDeceleration = +waypoint.maxDeceleration;
         this.endingVelocity = +waypoint.endingVelocity;
         this.tolerance = +waypoint.tolerance;
+
+        this.isPathBreak = waypoint.isPathBreak;
+
+
     }
 }

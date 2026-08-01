@@ -14,8 +14,11 @@ class Sidebar {
         document.getElementById("waypoints").innerHTML = "";
 
         for (let i = 0; i < this.currentPath.waypoints.length; i++) {
-            let html = `
+            let html = "";
+
+            html = `
                     <div class="waypoint" id="waypoint-${i}">
+                    <button style="position: absolute; top: 10px; right: 10px;" id="link-${i}">Link</button>
                     <input type="text" class="waypoint-name" id="name-${i}" value="${this.currentPath.waypoints[i].name}"></input>
                     <div class="coordinates">
                         <label>X:</label>
@@ -29,6 +32,7 @@ class Sidebar {
                         <label>θ:</label>
                         <input type="number" class="waypoint-coordinate" id="theta-${i}" name="theta" value="${this.currentPath.waypoints[i].theta.toFixed(2)}">
                         <label class="unit">deg</label>
+
                     </div>
                     <button onclick='document.getElementById("other-${i}").style.display = "block";'>More</button>
                     <div id="other-${i}" style="display: none;">
@@ -66,6 +70,14 @@ class Sidebar {
                     <button onclick='document.getElementById("other-${i}").style.display = "none";'>Hide</button>
                     </div>
                 </div>`
+            
+            if (this.currentPath.waypoints[i].isPathBreak) {
+                html += `
+                <div class="path-break">
+                    <label>Path Break</label>
+                </div>`
+            }
+
 
             document.getElementById("waypoints").innerHTML += html;
         }

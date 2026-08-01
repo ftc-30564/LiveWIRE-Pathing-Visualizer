@@ -42,6 +42,19 @@ function addEventListenersToSidebarInputs() {
         document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
             this.currentPath.waypoints[i].tolerance = parseFloat(event.target.value);
         });
+
+        document.getElementById(`link-${i}`).addEventListener("click", (event) => {
+            if (this.currentPath.selectedWaypointIndex != null && this.currentPath.selectedWaypointIndex != i) {
+                this.currentPath.waypoints[this.currentPath.selectedWaypointIndex].x -= this.currentPath.waypoints[i].x;
+                this.currentPath.waypoints[this.currentPath.selectedWaypointIndex].y -= this.currentPath.waypoints[i].y;
+                this.currentPath.waypoints[this.currentPath.selectedWaypointIndex].theta -= this.currentPath.waypoints[i].theta;
+
+                this.currentPath.waypoints[this.currentPath.selectedWaypointIndex].linkTo(this.currentPath.waypoints[i]);
+                
+                renderer.redrawEverything();
+                sidebar.updateSidebar();
+            }
+        });
     }
 }
 
@@ -70,7 +83,7 @@ canvas.addEventListener('mousemove', (event) => {
         // check if the mouse is hovering over any of the waypoints
         // if so, change mouse to pointer
         for (let x = 0; x < currentPath.waypoints.length; x ++) {
-            if (Renderer.isWithinSquare(mouseX, mouseY, currentPath.waypoints[x].x, currentPath.waypoints[x].y, WAYPOINT_TOLERANCE)) {
+            if (Renderer.isWithinSquare(mouseX, mouseY, currentPath.waypoints[x].getAbsoluteWaypoint().x, currentPath.waypoints[x].getAbsoluteWaypoint().y, WAYPOINT_TOLERANCE)) {
                 document.body.style.cursor = 'pointer';
                 break;
             }
@@ -91,7 +104,7 @@ canvas.addEventListener('mousedown', (event) => {
 
     for (let x = 0; x < currentPath.waypoints.length; x ++) {
         // if the user click is on a waypoint
-        if (Renderer.isWithinSquare(mouseX, mouseY, currentPath.waypoints[x].x, currentPath.waypoints[x].y, WAYPOINT_TOLERANCE)) {
+        if (Renderer.isWithinSquare(mouseX, mouseY, currentPath.waypoints[x].getAbsoluteWaypoint().x, currentPath.waypoints[x].getAbsoluteWaypoint().y, WAYPOINT_TOLERANCE)) {
             currentPath.selectWaypoint(x);
             state = "selecting";
             break;
@@ -181,6 +194,16 @@ document.getElementById("add-waypoint").onclick = () => {
     addEventListenersToSidebarInputs();
     renderer.redrawEverything();
 };
+
+document.getElementById("add-path-break").onclick = () => {
+    currentPath.waypoints[currentPath.waypoints.length - 1].isPathBreak = true;
+    currentPath.waypoints[currentPath.waypoints.length - 1].endingVelocity = 0;
+    currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`Waypoint${currentPath.waypoints.length}`));
+    
+    sidebar.initializeSidebar();
+    addEventListenersToSidebarInputs();
+    renderer.redrawEverything();
+}
 
 // MARK: Settings
 document.getElementById("settings-button").onclick = () => {

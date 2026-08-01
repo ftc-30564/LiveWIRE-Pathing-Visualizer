@@ -51,26 +51,26 @@ class Renderer {
     drawWaypoints() {
         for (let i = 0; i < this.currentPath.waypoints.length; i++) {
             let waypoint = this.currentPath.waypoints[i];
-            let x = Renderer.convertXInchesToPixels(waypoint.x);
-            let y = Renderer.convertYInchesToPixels(waypoint.y);
+            let x = Renderer.convertXInchesToPixels(waypoint.getAbsoluteWaypoint().x);
+            let y = Renderer.convertYInchesToPixels(waypoint.getAbsoluteWaypoint().y);
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
             ctx.fillStyle = "white";
             ctx.fill();
 
             if (i != this.currentPath.waypoints.length-1) {
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 3;
                 ctx.strokeStyle = "white";
                 ctx.lineCap = "butt";
                 ctx.beginPath();
-                ctx.moveTo(Renderer.convertXInchesToPixels(this.currentPath.waypoints[i].x), Renderer.convertYInchesToPixels(this.currentPath.waypoints[i].y));
-                ctx.lineTo(Renderer.convertXInchesToPixels(this.currentPath.waypoints[i+1].x), Renderer.convertYInchesToPixels(this.currentPath.waypoints[i+1].y));
+                ctx.moveTo(Renderer.convertXInchesToPixels(this.currentPath.waypoints[i].getAbsoluteWaypoint().x), Renderer.convertYInchesToPixels(this.currentPath.waypoints[i].getAbsoluteWaypoint().y));
+                ctx.lineTo(Renderer.convertXInchesToPixels(this.currentPath.waypoints[i+1].getAbsoluteWaypoint().x), Renderer.convertYInchesToPixels(this.currentPath.waypoints[i+1].getAbsoluteWaypoint().y));
                 ctx.stroke();
             }
 
             if (waypoint.selected) {
                 ctx.lineWidth = 4;
-                ctx.strokeStyle = "yellow";
+                ctx.strokeStyle = "rgb(0, 143, 238)";
                 ctx.beginPath();
                 ctx.arc(x, y, 12, 0, 2 * Math.PI);
                 ctx.stroke();

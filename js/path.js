@@ -23,8 +23,8 @@ class Path {
     }
 
     moveWaypoint(waypointIndex, newX, newY) {
-        this.waypoints[waypointIndex].x = newX;
-        this.waypoints[waypointIndex].y = newY;
+        this.waypoints[waypointIndex].setAbsoluteX(newX);
+        this.waypoints[waypointIndex].setAbsoluteY(newY);
         this.updateWaypointChain();
     }
 
@@ -34,7 +34,7 @@ class Path {
         this.selectedWaypointIndex = index;
         this.waypoints[index].selected = true;
 
-        document.getElementById("waypoint-" + index).style.border = "5px solid yellow";
+        document.getElementById("waypoint-" + index).style.border = "5px solid rgb(0, 143, 238)";
     }
 
     deselectWaypoint() {
@@ -59,7 +59,14 @@ class Path {
         this.waypoints[this.waypoints.length-1].endingVelocity = 0;
 
         for (let x = 1; x < this.waypoints.length-1; x++) {
-            let angleDifference = this.waypoints[x].angleWithRadians(this.waypoints[x+1]) - this.waypoints[x-1].angleWithRadians(this.waypoints[x]);
+            if (this.waypoints[x].isPathBreak) {
+                this.waypoints[x].endingVelocity = 0;
+                continue;
+            }
+            if (this.waypoints[x].endingVelocityLocked) {
+                continue;
+            }
+            let angleDifference = this.waypoints[x].getAbsoluteWaypoint().angleWithRadians(this.waypoints[x+1].getAbsoluteWaypoint()) - this.waypoints[x-1].getAbsoluteWaypoint().angleWithRadians(this.waypoints[x].getAbsoluteWaypoint());
             this.waypoints[x].endingVelocity = Math.min((Math.abs(Math.cos(angleDifference / 2)) * Settings.getSlowdownDefault()) * this.waypoints[x].maxVelocity, this.waypoints[x].maxVelocity);
         }
     }
@@ -76,7 +83,7 @@ class Path {
     computeTimeSegments() {
         this.totalAnimationTime = 0;
         for (let x = 0; x < this.waypoints.length-1; x++) {
-            let waypoint = this.waypoints[x];
+            let waypoint = this.waypoints[x].getAbsoluteWaypoint();
 
             // alert("Waypoint " + x);
 
@@ -98,18 +105,6 @@ class Path {
             waypoint.timeAtDecelerationEnd = waypoint.timeAtCruiseEnd + timeToDecelerate;
 
             this.totalAnimationTime += waypoint.timeAtDecelerationEnd;
-
-            /*
-            .23333
-            8.16
-
-            .76
-            37.2
-
-            1.23
-            16.333
-            */
-
             
             // alert(x);
             // alert(waypoint.distanceFrom(this.waypoints[x+1]));
