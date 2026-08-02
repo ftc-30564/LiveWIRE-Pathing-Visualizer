@@ -16,6 +16,9 @@ async function initialize() {
 
     sidebar.initializeSidebar();
     renderer.redrawEverything();
+
+    const event = new Event('initialize');
+    window.dispatchEvent(event);
 }
 
 initialize();

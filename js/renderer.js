@@ -47,12 +47,45 @@ class Renderer {
         ctx.drawImage(this.fieldImage, 0, 0, canvas.width, canvas.height); 
     }
 
+    drawArrow(x, y, theta, length) {
+        let dirX = Math.cos(theta);
+        let dirY = -Math.sin(theta);
+        let arrowLength = length;
+        let arrowX = x + dirX * arrowLength;
+        let arrowY = y + dirY * arrowLength;
+
+        ctx.beginPath();
+        ctx.moveTo(x+0.5, y+0.5);
+        ctx.lineTo(arrowX+0.5, arrowY+0.5);  
+        ctx.strokeStyle = "rgba(54, 186, 63, 0.65)";
+        ctx.lineWidth = 7;
+        ctx.stroke();
+
+        // let headLength = 10;
+        // let leftX = arrowX - dirX * headLength - dirY * headLength;
+        // let leftY = arrowY - dirY * headLength + dirX * headLength;
+        // let rightX = arrowX - dirX * headLength + dirY * headLength;
+        // let rightY = arrowY - dirY * headLength - dirX * headLength;
+
+        // ctx.beginPath();
+        // ctx.moveTo(arrowX+0.5, arrowY+0.5);
+        // ctx.lineTo(leftX+0.5, leftY+0.5);
+        // ctx.lineTo(rightX+0.5, rightY+0.5);
+        // ctx.closePath();
+        // ctx.fillStyle = "rgba(54, 186, 63, 0.65)";
+        // ctx.fill();
+    }
+
     // draws given waypoints on the field
     drawWaypoints() {
         for (let i = 0; i < this.currentPath.waypoints.length; i++) {
             let waypoint = this.currentPath.waypoints[i];
             let x = Renderer.convertXInchesToPixels(waypoint.getAbsoluteWaypoint().x);
             let y = Renderer.convertYInchesToPixels(waypoint.getAbsoluteWaypoint().y);
+            let theta = waypoint.getAbsoluteWaypoint().theta;
+
+            this.drawArrow(x, y, ((theta) * Math.PI) / 180, 18);
+
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
             ctx.fillStyle = "white";

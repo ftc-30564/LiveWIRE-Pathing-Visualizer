@@ -34,15 +34,21 @@ class Path {
         this.selectedWaypointIndex = index;
         this.waypoints[index].selected = true;
 
-        document.getElementById("waypoint-" + index).style.border = "5px solid rgb(0, 143, 238)";
+        this.waypoints[index].sidebarElement.style.border = "5px solid rgb(0, 143, 238)";
     }
 
     deselectWaypoint() {
         if (this.selectedWaypointIndex != null) {
-            document.getElementById("waypoint-" + this.selectedWaypointIndex).style.border = "none";
+            this.waypoints[this.selectedWaypointIndex].sidebarElement.style.border = "none";
             this.waypoints[this.selectedWaypointIndex].selected = false;
         }
         this.selectedWaypointIndex = null;
+    }
+
+    rotateSelectedWaypoint(deltaTheta) {
+        if (this.selectedWaypointIndex != null) {
+            this.waypoints[this.selectedWaypointIndex].theta += deltaTheta;
+        }
     }
 
     // updates the distances between each waypoint

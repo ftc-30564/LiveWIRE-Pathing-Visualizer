@@ -6,50 +6,50 @@ var shiftHeld = false;
 
 // adds event listeners to where anytime the inputs on the sidebar get changed, it updates the waypoint array, and redraws waypoints
 function addEventListenersToSidebarInputs() {
-    for (let i = 0; i < this.currentPath.waypoints.length; i++) {
+    for (let i = 0; i < currentPath.waypoints.length; i++) {
         document.getElementById(`name-${i}`).addEventListener("input", (event) => {
-            this.currentPath.waypoints[i].name = event.target.value;
+            currentPath.waypoints[i].name = event.target.value;
         })
 
         document.getElementById(`x-${i}`).addEventListener("input", (event) => {
-            this.currentPath.waypoints[i].x = parseFloat(event.target.value);
-            this.currentPath.updateWaypointChain();
-            this.renderer.redrawEverything();
+            currentPath.waypoints[i].x = parseFloat(event.target.value);
+            currentPath.updateWaypointChain();
+            renderer.redrawEverything();
         });
         document.getElementById(`y-${i}`).addEventListener("input", (event) => {
-            this.currentPath.waypoints[i].y = parseFloat(event.target.value);
-            this.currentPath.updateWaypointChain();
-            this.renderer.redrawEverything();
+            currentPath.waypoints[i].y = parseFloat(event.target.value);
+            currentPath.updateWaypointChain();
+            renderer.redrawEverything();
         });
         document.getElementById(`theta-${i}`).addEventListener("input", (event) => {
-            this.currentPath.waypoints[i].theta = parseFloat(event.target.value);
-            this.currentPath.updateWaypointChain();
-            this.renderer.redrawEverything();
+            currentPath.waypoints[i].theta = parseFloat(event.target.value);
+            currentPath.updateWaypointChain();
+            renderer.redrawEverything();
         });
 
         document.getElementById(`maxVelocity-${i}`).addEventListener("input", (event) => {
-            this.currentPath.waypoints[i].maxVelocity = parseFloat(event.target.value);
+            currentPath.waypoints[i].maxVelocity = parseFloat(event.target.value);
         });
         document.getElementById(`maxAcceleration-${i}`).addEventListener("input", (event) => {
-            this.currentPath.waypoints[i].maxAcceleration = parseFloat(event.target.value);
+            currentPath.waypoints[i].maxAcceleration = parseFloat(event.target.value);
         });
         document.getElementById(`maxDeceleration-${i}`).addEventListener("input", (event) => {
-            this.currentPath.waypoints[i].maxDeceleration = parseFloat(event.target.value);
+            currentPath.waypoints[i].maxDeceleration = parseFloat(event.target.value);
         });
         document.getElementById(`endingVel-${i}`).addEventListener("input", (event) => {
-            this.currentPath.waypoints[i].endingVelocity = parseFloat(event.target.value);
+            currentPath.waypoints[i].endingVelocity = parseFloat(event.target.value);
         });
         document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
-            this.currentPath.waypoints[i].tolerance = parseFloat(event.target.value);
+            currentPath.waypoints[i].tolerance = parseFloat(event.target.value);
         });
 
         document.getElementById(`link-${i}`).addEventListener("click", (event) => {
-            if (this.currentPath.selectedWaypointIndex != null && this.currentPath.selectedWaypointIndex != i) {
-                this.currentPath.waypoints[this.currentPath.selectedWaypointIndex].x -= this.currentPath.waypoints[i].x;
-                this.currentPath.waypoints[this.currentPath.selectedWaypointIndex].y -= this.currentPath.waypoints[i].y;
-                this.currentPath.waypoints[this.currentPath.selectedWaypointIndex].theta -= this.currentPath.waypoints[i].theta;
+            if (currentPath.selectedWaypointIndex != null && currentPath.selectedWaypointIndex != i) {
+                currentPath.waypoints[currentPath.selectedWaypointIndex].x -= currentPath.waypoints[i].x;
+                currentPath.waypoints[currentPath.selectedWaypointIndex].y -= currentPath.waypoints[i].y;
+                currentPath.waypoints[currentPath.selectedWaypointIndex].theta -= currentPath.waypoints[i].theta;
 
-                this.currentPath.waypoints[this.currentPath.selectedWaypointIndex].linkTo(this.currentPath.waypoints[i]);
+                currentPath.waypoints[currentPath.selectedWaypointIndex].linkTo(currentPath.waypoints[i]);
                 
                 renderer.redrawEverything();
                 sidebar.updateSidebar();
@@ -58,6 +58,9 @@ function addEventListenersToSidebarInputs() {
     }
 }
 
+window.addEventListener('initialize', () => {
+    addEventListenersToSidebarInputs();
+});
 
 // MARK: Mouse Inputs
 canvas.addEventListener('mousemove', (event) => {
@@ -180,6 +183,16 @@ document.addEventListener('keydown', (event) => {
     if (event.key == 'j') {
         exporter.toggleJava(currentPath);
     }
+
+    if (event.key == 'ArrowRight') {
+        currentPath.rotateSelectedWaypoint(-1);
+        renderer.redrawEverything();
+    }
+    if (event.key == 'ArrowLeft') {
+        currentPath.rotateSelectedWaypoint(1);
+        sidebar.updateSidebar();
+        renderer.redrawEverything();
+    }
 });
 
 document.addEventListener('keyup', (event) => {
@@ -226,7 +239,7 @@ uploadButton.addEventListener('click', async () => {
         if (jsonData) {
 
             try {
-                this.currentPath.waypoints = [];
+                currentPath.waypoints = [];
 
                 // alert(jsonData.waypoints[0].x);
 

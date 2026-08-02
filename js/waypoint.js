@@ -21,6 +21,7 @@ class Waypoint {
 
         this.selected = false;
         this.dropdownEnabled = false;
+        this.sidebarElement = null;
 
         this.linked = false;
         this.linkedWaypoint = null;

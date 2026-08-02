@@ -7,16 +7,34 @@ class Export {
         let ret = "";
 
         for (let x = 0; x < path.waypoints.length; x ++) {
-            // TODO: use waypoint.name when added
             ret += `\n\t\tWaypoint ${path.waypoints[x].name} = new Waypoint(new Pose2d(${path.waypoints[x].x}, ${path.waypoints[x].y}, Math.toRadians(${path.waypoints[x].theta})), ${path.waypoints[x].maxAcceleration}, ${path.waypoints[x].maxDeceleration}, ${path.waypoints[x].maxVelocity}, ${path.waypoints[x].endingVelocity}, ${path.waypoints[x].tolerance});`;
         }
         
 
-        ret += `\n\n\t\tPath path = new Path(${path.waypoints[0].name})`;
+        let pathIndex = 1;
+        ret += `\n\n\t\tPath path = new Path${pathIndex}(${path.waypoints[0].name})`;
 
-        for (let x = 1; x < path.waypoints.length; x++) {
+        for (let x = 0; x < path.waypoints.length; x ++) {
+            // alert(x);
+
             ret += `\n\t\t\t.addWaypoint(${path.waypoints[x].name})`
+
+            if (path.waypoints[x].isPathBreak) {
+                pathIndex++;
+                ret += `\n\n\t\tPath path = new Path${pathIndex}(${path.waypoints[x].name})`;
+            }
+            //ret += `\n\n\t\tPath path = new Path${pathIndex}(${path.waypoints[x].name})`;
+
+            // for (let y = x + 1; y < path.waypoints.length; y++) {
+            //     ret += `\n\t\t\t.addWaypoint(${path.waypoints[y].name})`
+            //     if (path.waypoints[y].isPathBreak) {
+            //         ret += `\n\t\t\t.build()`;
+            //         pathIndex++;
+            //         break;
+            //     }
+            // }
         }
+
         ret += ";";
 
         return ret;

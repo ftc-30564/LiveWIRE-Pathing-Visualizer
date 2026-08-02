@@ -81,10 +81,14 @@ class Sidebar {
 
             document.getElementById("waypoints").innerHTML += html;
         }
+
+        for (let i = 0; i < this.currentPath.waypoints.length; i++) {
+            this.currentPath.waypoints[i].setSidebarElement(document.getElementById(`waypoint-${i}`));
+        }
     }
 
     updateSidebar() {
-        for (let i = 0; i < currentPath.waypoints.length; i++) {
+        for (let i = 0; i < this.currentPath.waypoints.length; i++) {
             document.getElementById(`x-${i}`).value = this.currentPath.waypoints[i].x.toFixed(2);
             document.getElementById(`y-${i}`).value = this.currentPath.waypoints[i].y.toFixed(2);
             document.getElementById(`theta-${i}`).value = this.currentPath.waypoints[i].theta.toFixed(2);
