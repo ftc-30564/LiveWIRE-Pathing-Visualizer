@@ -81,6 +81,7 @@ canvas.addEventListener('mousemove', (event) => {
         currentPath.moveWaypoint(currentPath.selectedWaypointIndex, mouseX, mouseY);
         renderer.redrawEverything();
         sidebar.updateSidebar();
+        animator.resetAnimation();
     }
     else {
         // check if the mouse is hovering over any of the waypoints
@@ -172,13 +173,13 @@ document.addEventListener('keydown', (event) => {
         animator.toggleAnimation();
     }
 
-    if (event.key == 'n') {
-        animator.stopAnimation();
-    }
+    // if (event.key == 'n') {
+    //     animator.stopAnimation();
+    // }
 
-    if (event.key == 'r') {
-        animator.resetAnimation();
-    }
+    // if (event.key == 'r') {
+    //     animator.resetAnimation();
+    // }
 
     if (event.key == 'j') {
         exporter.toggleJava(currentPath);
@@ -186,6 +187,7 @@ document.addEventListener('keydown', (event) => {
 
     if (event.key == 'ArrowRight') {
         currentPath.rotateSelectedWaypoint(-1);
+        sidebar.updateSidebar();
         renderer.redrawEverything();
     }
     if (event.key == 'ArrowLeft') {
@@ -277,4 +279,51 @@ exportButton.addEventListener('click', async () => {
     else {
         alert(`Export failed: ${response.error || response.message}`);
     }
+});
+
+// MARK: Timeline
+
+let dragging = false;
+
+document.getElementById('timeline').addEventListener('mousedown', (event) => {
+    currentPath.computeTimeSegments();
+
+    dragging = true;
+});
+
+
+document.addEventListener('mousemove', (event) => {
+    if (dragging) {
+        // Get the bounding rectangle of the canvas
+        const rect = document.getElementById('timeline').getBoundingClientRect();
+
+        // Calculate mouse coordinates relative to the field
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        if (mouseX < 0 || mouseX > rect.width || mouseY < 0 || mouseY > rect.height) {
+            return;
+        }
+
+        let percent = mouseX / rect.width;
+
+        // clamp between 0 and 1
+        percent = Math.min(Math.max(percent, 0), 1);
+
+        const time = percent * currentPath.totalAnimationTime;
+
+        animator.stopAnimation();
+
+        renderer.robotDistance = currentPath.getDistanceAlongPath(time);
+        renderer.redrawEverything();
+
+        animator.stopAnimation();
+
+        document.getElementById('timeline-handle').style.left = `${percent * 100}%`;
+        document.getElementById('timeline-progress').style.width = `${percent * 100}%`;
+    }
+});
+
+document.addEventListener('mouseup', (event) => {
+    dragging = false;
 });

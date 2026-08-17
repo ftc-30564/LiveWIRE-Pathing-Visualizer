@@ -143,7 +143,7 @@ class Path {
             // }
 
             if (timeIntoPath < this.waypoints[x].timeAtAccelerationEnd) {
-                debug.innerText = "acceleratin";
+                //debug.innerText = "acceleratin";
                 //alert("acceleratin");
 
                 // calculate, based on the given time, how far in the acceleration it is.
@@ -151,7 +151,7 @@ class Path {
                 return previousSegmentDistances + distanceAccelerating;
             }
             else if (timeIntoPath < this.waypoints[x].timeAtCruiseEnd) {
-                debug.innerText = "cruisin";
+                //debug.innerText = "cruisin";
                 //alert("cruisin");
                 return previousSegmentDistances + this.waypoints[x].distanceToAccelerate + (this.waypoints[x].maxVelocity * (timeIntoPath - this.waypoints[x].timeAtAccelerationEnd));
             }
@@ -160,11 +160,13 @@ class Path {
                 //alert("deceleratin");
                 let timeIntoDeceleration = (timeIntoPath - this.waypoints[x].timeAtCruiseEnd);
                 // alert("Deceleratin");
-                debug.innerText = "deceleratin";
+                //debug.innerText = "deceleratin";
                 //alert(timeIntoDeceleration);
                 let distanceDecelerating = (this.waypoints[x].maxVelocity * timeIntoDeceleration) - (1/2)*this.waypoints[x].maxDeceleration*Math.pow(timeIntoDeceleration, 2);
                 return previousSegmentDistances + this.waypoints[x].distanceToAccelerate + this.waypoints[x].distanceToCruise + distanceDecelerating;
             }
         }
+
+        return this.waypoints[this.waypoints.length-1].distanceIntoPath;
     }
 }

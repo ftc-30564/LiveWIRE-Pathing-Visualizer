@@ -55,7 +55,7 @@ class Robot {
         }
         else {
             for (let x = 1; x < waypoints.length; x ++) {
-                if (waypoints[x].distanceIntoPath > distance) {
+                if (waypoints[x].distanceIntoPath >= distance) {
                     //alert("distance is " + distance + ", waypoint last is " + (x-1));
                     lastWaypoint = waypoints[x-1].getAbsoluteWaypoint();
                     nextWaypoint = waypoints[x].getAbsoluteWaypoint();
@@ -64,8 +64,8 @@ class Robot {
 
                 if (x == waypoints.length-1) {
                     // alert("no waypoint found, given distance is " + distance);
-                    lastWaypoint = waypoints[x-1].getAbsoluteWaypoint();
-                    nextWaypoint = waypoints[x].getAbsoluteWaypoint();
+                    lastWaypoint = waypoints[0].getAbsoluteWaypoint();
+                    nextWaypoint = waypoints[1].getAbsoluteWaypoint();
                 }
             }
         }

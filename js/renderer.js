@@ -112,8 +112,8 @@ class Renderer {
     }
 
     redrawEverything() {
-        canvas.width = window.innerHeight - 50;
-        canvas.height = window.innerHeight - 50;
+        canvas.width = window.innerHeight - 90;
+        canvas.height = window.innerHeight - 90;
 
         this.clear();
         this.drawImage();
@@ -127,6 +127,7 @@ class Animator {
         this.renderer = renderer;
         this.running = false;
         this.startTime = 0;
+        this.offsetTime = 0;
     }
 
     toggleAnimation() {
@@ -138,7 +139,7 @@ class Animator {
     }
 
     resetAnimation() {
-        this.startTime = 0;
+        this.startTime = performance.now();
         this.running = false;
         this.renderer.redrawEverything();
         currentPath.computeTimeSegments();
@@ -150,7 +151,15 @@ class Animator {
         }
         currentPath.computeTimeSegments();
         this.running = true;
-        this.startTime = performance.now();
+                
+        let timelinePercent = parseFloat(document.getElementById('timeline-handle').style.left) / 100;
+        if (timelinePercent == null || isNaN(timelinePercent)) {
+            timelinePercent = 0;
+        }
+        // alert(timelinePercent);
+        // alert(timelinePercent);
+        this.startTime = performance.now() - (timelinePercent * currentPath.totalAnimationTime * 1000);
+        // alert(this.startTime);
         requestAnimationFrame(() => this.runAnimationTime());
     }
 
@@ -174,6 +183,10 @@ class Animator {
         this.renderer.robotDistance = currentPath.getDistanceAlongPath(time);
         this.renderer.redrawEverything();
         
+        const percent = time / currentPath.totalAnimationTime;
+
+        document.getElementById('timeline-handle').style.left = `${percent * 100}%`;
+        document.getElementById('timeline-progress').style.width = `${percent * 100}%`;
 
         if (time > currentPath.totalAnimationTime) {
             this.startTime = performance.now();
