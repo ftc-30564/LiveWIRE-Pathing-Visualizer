@@ -26,8 +26,6 @@ class Waypoint {
         this.linked = false;
         this.linkedWaypoint = null;
 
-        this.endingVelocityLocked = false; // if true, the ending velocity will not be updated when updateWaypointEndingVelocities() is called
-
         // if it is the last waypoint in a path
         this.isPathBreak = false;
 

@@ -39,6 +39,10 @@ function addEventListenersToSidebarInputs() {
         document.getElementById(`endingVel-${i}`).addEventListener("input", (event) => {
             currentPath.waypoints[i].endingVelocity = parseFloat(event.target.value);
         });
+        document.getElementById(`calculate-ending-vel-${i}`).addEventListener("click", (event) => {
+            currentPath.updateWaypointEndingVelocity(i);
+            sidebar.updateSidebar();
+        });
         document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
             currentPath.waypoints[i].tolerance = parseFloat(event.target.value);
         });
@@ -118,7 +122,7 @@ canvas.addEventListener('mousedown', (event) => {
         if (x === currentPath.waypoints.length - 1) {
             if ((state == "idle") && shiftHeld) {
                 // create a new waypoint
-                currentPath.addWaypoint(new Waypoint(mouseX, mouseY, 0).withName(`Waypoint${currentPath.waypoints.length}`));
+                currentPath.addWaypoint(new Waypoint(mouseX, mouseY, 0).withName(`way${currentPath.waypoints.length}`));
                 sidebar.initializeSidebar();
                 addEventListenersToSidebarInputs();
             }
@@ -204,7 +208,7 @@ document.addEventListener('keyup', (event) => {
 })
 
 document.getElementById("add-waypoint").onclick = () => {
-    currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`Waypoint${currentPath.waypoints.length}`));
+    currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${currentPath.waypoints.length}`));
     sidebar.initializeSidebar();
     addEventListenersToSidebarInputs();
     renderer.redrawEverything();
@@ -213,7 +217,7 @@ document.getElementById("add-waypoint").onclick = () => {
 document.getElementById("add-path-break").onclick = () => {
     currentPath.waypoints[currentPath.waypoints.length - 1].isPathBreak = true;
     currentPath.waypoints[currentPath.waypoints.length - 1].endingVelocity = 0;
-    currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`Waypoint${currentPath.waypoints.length}`));
+    currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${currentPath.waypoints.length}`));
     
     sidebar.initializeSidebar();
     addEventListenersToSidebarInputs();
@@ -299,13 +303,10 @@ document.addEventListener('mousemove', (event) => {
 
         // Calculate mouse coordinates relative to the field
         const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
 
-        if (mouseX < 0 || mouseX > rect.width || mouseY < 0 || mouseY > rect.height) {
-            return;
-        }
+        const clampedMouseX = Math.min(Math.max(mouseX, 0), rect.width);
 
-        let percent = mouseX / rect.width;
+        let percent = clampedMouseX / rect.width;
 
         // clamp between 0 and 1
         percent = Math.min(Math.max(percent, 0), 1);

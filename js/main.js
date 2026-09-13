@@ -14,8 +14,9 @@ async function initialize() {
     exporter = new Export();
     animator = new Animator(renderer);
 
-    sidebar.initializeSidebar();
     renderer.redrawEverything();
+    sidebar.initializeSidebar();
+    
 
     const event = new Event('initialize');
     window.dispatchEvent(event);

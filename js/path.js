@@ -1,8 +1,9 @@
 class Path {
     constructor() {
-        this.waypoints = [new Waypoint(50, 50, 0).withName("Waypoint0"), new Waypoint(75, 75, 45).withName("Waypoint1")];
+        this.waypoints = [new Waypoint(50, 50, 0).withName("way0"), new Waypoint(75, 75, 45).withName("way1")];
         this.selectedWaypointIndex = null;
         this.totalAnimationTime;
+        this.updateWaypointChain();
     }
 
     addWaypoint(waypoint) {
@@ -60,28 +61,34 @@ class Path {
         }
     }
 
-    updateWaypointEndingVelocities() {
-        this.waypoints[0].endingVelocity = 0;
-        this.waypoints[this.waypoints.length-1].endingVelocity = 0;
+    getDistancesOfPathBreaks() {
+        let ret = [];
+        let runningDistance = 0;
+        for (let x = 1; x < this.waypoints.length; x ++) {
+            runningDistance += this.waypoints[x].distanceFrom(this.waypoints[x-1]);
 
-        for (let x = 1; x < this.waypoints.length-1; x++) {
             if (this.waypoints[x].isPathBreak) {
-                this.waypoints[x].endingVelocity = 0;
-                continue;
+                ret.push(runningDistance);
             }
-            if (this.waypoints[x].endingVelocityLocked) {
-                continue;
-            }
-            let angleDifference = this.waypoints[x].getAbsoluteWaypoint().angleWithRadians(this.waypoints[x+1].getAbsoluteWaypoint()) - this.waypoints[x-1].getAbsoluteWaypoint().angleWithRadians(this.waypoints[x].getAbsoluteWaypoint());
-            this.waypoints[x].endingVelocity = Math.min((Math.abs(Math.cos(angleDifference / 2)) * Settings.getSlowdownDefault()) * this.waypoints[x].maxVelocity, this.waypoints[x].maxVelocity);
         }
+        ret.push(runningDistance); // add the end of the path as a path break
+        return ret;
+    }
+
+    updateWaypointEndingVelocity(index) {
+        if (index == 0 || index == this.waypoints.length-1 || this.waypoints[index].isPathBreak) {
+            this.waypoints[index].endingVelocity = 0;
+            return;
+        }
+
+        let angleDifference = this.waypoints[index].getAbsoluteWaypoint().angleWithRadians(this.waypoints[index+1].getAbsoluteWaypoint()) - this.waypoints[index-1].getAbsoluteWaypoint().angleWithRadians(this.waypoints[index].getAbsoluteWaypoint());
+        this.waypoints[index].endingVelocity = Math.min((Math.abs(Math.cos(angleDifference / 2)) * Settings.getSlowdownDefault()) * this.waypoints[index].maxVelocity, this.waypoints[index].maxVelocity);
     }
 
     // any time a new waypoint is created, or waypoints are moved, this should be called.
     // this updates the distances and ending velocities between the two 
     updateWaypointChain() {
         this.updateWaypointDistances();
-        this.updateWaypointEndingVelocities();
     }
 
     // computes the time to accelerate, cruise, and decelerate for each waypoint.

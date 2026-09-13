@@ -21,7 +21,7 @@ class Export {
 
             if (path.waypoints[x].isPathBreak) {
                 pathIndex++;
-                ret += `\n\n\t\tPath path = new Path${pathIndex}(${path.waypoints[x].name})`;
+                ret += `\n\n\t\tPath path${pathIndex} = new Path(${path.waypoints[x].name})`;
             }
             //ret += `\n\n\t\tPath path = new Path${pathIndex}(${path.waypoints[x].name})`;
 

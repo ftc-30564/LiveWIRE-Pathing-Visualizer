@@ -59,6 +59,7 @@ class Sidebar {
                         <label>Ending Vel:</label>
                         <input type="number" class="waypoint-vel" id="endingVel-${i}" value="${this.currentPath.waypoints[i].endingVelocity}">
                         <label class="unit">in/s</label>
+                        <button id="calculate-ending-vel-${i}">Calculate</button>
                     </div>
 
                     <div class="other">

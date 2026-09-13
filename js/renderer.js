@@ -10,7 +10,7 @@ class Renderer {
         this.robot = new Robot();
 
         this.fieldImage = new Image();
-        this.fieldImage.src = "decode-field.png";
+        this.fieldImage.src = "biobuzz-field-rotated.png";
 
         this.fieldImage.onload = () => {
             this.redrawEverything();
@@ -57,7 +57,7 @@ class Renderer {
         ctx.beginPath();
         ctx.moveTo(x+0.5, y+0.5);
         ctx.lineTo(arrowX+0.5, arrowY+0.5);  
-        ctx.strokeStyle = "rgba(54, 186, 63, 0.65)";
+        ctx.strokeStyle = "rgba(247, 7, 7, 0.65)";
         ctx.lineWidth = 7;
         ctx.stroke();
 
@@ -78,6 +78,21 @@ class Renderer {
 
     // draws given waypoints on the field
     drawWaypoints() {
+        let pathBreaks = this.currentPath.getDistancesOfPathBreaks();
+
+        pathBreaks.unshift(0);
+
+        // alert(pathBreaks);
+
+        let currentRobotPathBreakIndex = 0;
+
+        for (let i = 0; i < pathBreaks.length-1; i++) {
+            if ((this.robotDistance >= pathBreaks[i]) && (this.robotDistance < pathBreaks[i+1])) {
+                currentRobotPathBreakIndex = i;
+                break;
+            }
+        }
+
         for (let i = 0; i < this.currentPath.waypoints.length; i++) {
             let waypoint = this.currentPath.waypoints[i];
             let x = Renderer.convertXInchesToPixels(waypoint.getAbsoluteWaypoint().x);
@@ -86,20 +101,28 @@ class Renderer {
 
             this.drawArrow(x, y, ((theta) * Math.PI) / 180, 18);
 
-            ctx.beginPath();
-            ctx.arc(x, y, 8, 0, 2 * Math.PI);
-            ctx.fillStyle = "white";
-            ctx.fill();
-
             if (i != this.currentPath.waypoints.length-1) {
                 ctx.lineWidth = 3;
-                ctx.strokeStyle = "white";
+                if ((this.currentPath.waypoints[i].distanceIntoPath >= pathBreaks[currentRobotPathBreakIndex] &&
+                    this.currentPath.waypoints[i].distanceIntoPath <= pathBreaks[currentRobotPathBreakIndex + 1]) &&
+                    (this.currentPath.waypoints[i+1].distanceIntoPath >= pathBreaks[currentRobotPathBreakIndex] &&
+                    this.currentPath.waypoints[i+1].distanceIntoPath <= pathBreaks[currentRobotPathBreakIndex + 1])) {
+                    ctx.strokeStyle = "rgb(71, 182, 255)";
+                }
+                else {
+                    ctx.strokeStyle = "white";
+                }
                 ctx.lineCap = "butt";
                 ctx.beginPath();
                 ctx.moveTo(Renderer.convertXInchesToPixels(this.currentPath.waypoints[i].getAbsoluteWaypoint().x), Renderer.convertYInchesToPixels(this.currentPath.waypoints[i].getAbsoluteWaypoint().y));
                 ctx.lineTo(Renderer.convertXInchesToPixels(this.currentPath.waypoints[i+1].getAbsoluteWaypoint().x), Renderer.convertYInchesToPixels(this.currentPath.waypoints[i+1].getAbsoluteWaypoint().y));
                 ctx.stroke();
             }
+
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, 2 * Math.PI);
+            ctx.fillStyle = "white";
+            ctx.fill();
 
             if (waypoint.selected) {
                 ctx.lineWidth = 4;
