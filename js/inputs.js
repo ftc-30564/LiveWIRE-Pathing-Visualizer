@@ -27,38 +27,53 @@ function addEventListenersToSidebarInputs(path) {
             renderer.redrawEverything(path);
         });
 
-        document.getElementById(`maxVelocity-${i}`).addEventListener("input", (event) => {
-            path.waypoints[i].maxVelocity = parseFloat(event.target.value);
-        });
-        document.getElementById(`maxAcceleration-${i}`).addEventListener("input", (event) => {
-            path.waypoints[i].maxAcceleration = parseFloat(event.target.value);
-        });
-        document.getElementById(`maxDeceleration-${i}`).addEventListener("input", (event) => {
-            path.waypoints[i].maxDeceleration = parseFloat(event.target.value);
-        });
-        document.getElementById(`endingVel-${i}`).addEventListener("input", (event) => {
-            path.waypoints[i].endingVelocity = parseFloat(event.target.value);
-        });
-        document.getElementById(`calculate-ending-vel-${i}`).addEventListener("click", (event) => {
-            path.updateWaypointEndingVelocity(i);
-            sidebar.updateSidebar(path);
-        });
-        document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
-            path.waypoints[i].tolerance = parseFloat(event.target.value);
-        });
+        if (i != path.waypoints.length-1) {
+            document.getElementById(`maxVelocity-${i}`).addEventListener("input", (event) => {
+                path.waypoints[i].maxVelocity = parseFloat(event.target.value);
+            });
+        }
 
-        document.getElementById(`link-${i}`).addEventListener("click", (event) => {
-            if (path.selectedWaypointIndex != null && path.selectedWaypointIndex != i) {
-                path.waypoints[path.selectedWaypointIndex].x -= path.waypoints[i].x;
-                path.waypoints[path.selectedWaypointIndex].y -= path.waypoints[i].y;
-                path.waypoints[path.selectedWaypointIndex].theta -= path.waypoints[i].theta;
+        if (i != path.waypoints.length-1) {
+            document.getElementById(`maxAcceleration-${i}`).addEventListener("input", (event) => {
+                path.waypoints[i].maxAcceleration = parseFloat(event.target.value);
+            });
+        }
 
-                path.waypoints[path.selectedWaypointIndex].linkTo(path.waypoints[i]);
+        if (i != 0) {
+            document.getElementById(`maxDeceleration-${i}`).addEventListener("input", (event) => {
+                path.waypoints[i].maxDeceleration = parseFloat(event.target.value);
+            });
+        }
 
-                renderer.redrawEverything(path);
+        if (i != path.waypoints.length-1 && i != 0) {
+            document.getElementById(`endingVel-${i}`).addEventListener("input", (event) => {
+                path.waypoints[i].endingVelocity = parseFloat(event.target.value);
+            });
+
+            document.getElementById(`calculate-ending-vel-${i}`).addEventListener("click", (event) => {
+                path.updateWaypointEndingVelocity(i);
                 sidebar.updateSidebar(path);
-            }
-        });
+            });
+        }
+
+        if (i != 0) {
+            document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
+                path.waypoints[i].tolerance = parseFloat(event.target.value);
+            });
+        }
+
+        // document.getElementById(`link-${i}`).addEventListener("click", (event) => {
+        //     if (path.selectedWaypointIndex != null && path.selectedWaypointIndex != i) {
+        //         path.waypoints[path.selectedWaypointIndex].x -= path.waypoints[i].x;
+        //         path.waypoints[path.selectedWaypointIndex].y -= path.waypoints[i].y;
+        //         path.waypoints[path.selectedWaypointIndex].theta -= path.waypoints[i].theta;
+
+        //         path.waypoints[path.selectedWaypointIndex].linkTo(path.waypoints[i]);
+
+        //         renderer.redrawEverything(path);
+        //         sidebar.updateSidebar(path);
+        //     }
+        // });
     }
 }
 

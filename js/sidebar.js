@@ -17,7 +17,6 @@ class Sidebar {
 
             html = `
                     <div class="waypoint" id="waypoint-${i}">
-                    <button style="position: absolute; top: 10px; right: 10px;" id="link-${i}">Link</button>
                     <input type="text" class="waypoint-name" id="name-${i}" value="${path.waypoints[i].name}"></input>
                     <div class="coordinates">
                         <label>X:</label>
@@ -34,42 +33,58 @@ class Sidebar {
 
                     </div>
                     <button onclick='document.getElementById("other-${i}").style.display = "block";'>More</button>
-                    <div id="other-${i}" style="display: none;">
+                    <div id="other-${i}" style="display: none;">`
 
-                    <div class="other">
+                    // don't show max velocity for last waypoint, since it is always 0
+                    if (i != path.waypoints.length-1) {
+                        html += `<div class="other">
                         <label>Max Vel:</label>
                         <input type="number" class="waypoint-vel" id="maxVelocity-${i}" value="${path.waypoints[i].maxVelocity}">
                         <label class="unit">in/s</label>
-                    </div>
+                        </div>`
+                    }
 
-                    <div class="other">
+                    // don't show acceleration for last waypoint, since it is always 0
+                    if (i != path.waypoints.length-1) {
+                        html += `<div class="other">
                         <label>Accel:</label>
                         <input type="number" class="waypoint-vel" id="maxAcceleration-${i}"value="${path.waypoints[i].maxAcceleration}">
                         <label class="unit">in/s<sup>2</sup></label>
-                    </div>
+                        </div>`
+                    }
 
-                    <div class="other">
+                    // don't show deceleration for first waypoint, since it is always 0
+                    if (i != 0) {
+                        html += `<div class="other">
                         <label>Decel:</label>
                         <input type="number" class="waypoint-vel" id="maxDeceleration-${i}" value="${path.waypoints[i].maxDeceleration}">
                         <label class="unit">in/s<sup>2</sup></label>
-                    </div>
+                        </div>`;
+                    }
 
-                    <div class="other">
-                        <label>Ending Vel:</label>
-                        <input type="number" class="waypoint-vel" id="endingVel-${i}" value="${path.waypoints[i].endingVelocity}">
-                        <label class="unit">in/s</label>
-                        <button id="calculate-ending-vel-${i}">Calculate</button>
-                    </div>
+                    // don't show ending velocity for first and last waypoint, since they are always 0
+                    if (i != path.waypoints.length-1 && i != 0) {
+                        html += `
+                        <div class="other">
+                            <label>Ending Vel:</label>
+                            <input type="number" class="waypoint-vel" id="endingVel-${i}" value="${path.waypoints[i].endingVelocity}">
+                            <label class="unit">in/s</label>
+                            <button id="calculate-ending-vel-${i}">Calculate</button>
+                        </div>`;
+                    }
 
-                    <div class="other">
+                    // don't show tolerance for first waypoint, since it is always 0
+                    if (i != 0) {
+                        html += `<div class="other">
                         <label>Ending Tolerance:</label>
                         <input type="number" class="waypoint-vel" id="tolerance-${i}" value="${path.waypoints[i].tolerance}">
                         <label class="unit">in</label>
-                    </div>
-
+                        </div>`;
+                    }
+                    html += `
                     <button onclick='document.getElementById("other-${i}").style.display = "none";'>Hide</button>
                     </div>
-                </div>`
+                    </div>`
 
 
             document.getElementById("waypoints").innerHTML += html;
