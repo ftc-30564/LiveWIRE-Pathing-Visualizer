@@ -48,7 +48,7 @@ class Export {
         });
 
         var ret = {
-            "name": "Path1",
+            "name": path.name,
             "waypoints": strippedWaypoints
         };
 

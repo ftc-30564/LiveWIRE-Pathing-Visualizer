@@ -1,4 +1,5 @@
 var currentPath;
+var paths = [];
 
 var renderer;
 var sidebar;
@@ -7,16 +8,20 @@ var animator;
 
 async function initialize() {
     await Settings.loadSettings();
-    currentPath = new Path();
+    currentPath = new Path("Path1");
+    currentPath.selected = true;
+    
+    paths.push(currentPath);
+    paths.push(new Path("testes"));
 
     renderer = new Renderer(currentPath);
-    sidebar = new Sidebar(currentPath);
+    sidebar = new Sidebar();
     exporter = new Export();
     animator = new Animator(renderer);
 
-    renderer.redrawEverything();
-    sidebar.initializeSidebar();
-    
+    renderer.redrawEverything(currentPath);
+    sidebar.initializeSidebar(currentPath);
+    animator.resetAnimation(currentPath);
 
     const event = new Event('initialize');
     window.dispatchEvent(event);
@@ -25,5 +30,5 @@ async function initialize() {
 initialize();
 
 window.addEventListener("resize", () => {
-    renderer.redrawEverything();
+    renderer.redrawEverything(currentPath);
 });

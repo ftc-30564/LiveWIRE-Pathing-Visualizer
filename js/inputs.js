@@ -5,75 +5,119 @@ var selectedWaypointIndex = null;
 var shiftHeld = false;
 
 // adds event listeners to where anytime the inputs on the sidebar get changed, it updates the waypoint array, and redraws waypoints
-function addEventListenersToSidebarInputs() {
-    for (let i = 0; i < currentPath.waypoints.length; i++) {
+function addEventListenersToSidebarInputs(path) {
+    for (let i = 0; i < path.waypoints.length; i++) {
         document.getElementById(`name-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].name = event.target.value;
+            path.waypoints[i].name = event.target.value;
         })
 
         document.getElementById(`x-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].x = parseFloat(event.target.value);
-            currentPath.updateWaypointChain();
-            renderer.redrawEverything();
+            path.waypoints[i].x = parseFloat(event.target.value);
+            path.updateWaypointChain();
+            renderer.redrawEverything(path);
         });
         document.getElementById(`y-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].y = parseFloat(event.target.value);
-            currentPath.updateWaypointChain();
-            renderer.redrawEverything();
+            path.waypoints[i].y = parseFloat(event.target.value);
+            path.updateWaypointChain();
+            renderer.redrawEverything(path);
         });
         document.getElementById(`theta-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].theta = parseFloat(event.target.value);
-            currentPath.updateWaypointChain();
-            renderer.redrawEverything();
+            path.waypoints[i].theta = parseFloat(event.target.value);
+            path.updateWaypointChain();
+            renderer.redrawEverything(path);
         });
 
         document.getElementById(`maxVelocity-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].maxVelocity = parseFloat(event.target.value);
+            path.waypoints[i].maxVelocity = parseFloat(event.target.value);
         });
         document.getElementById(`maxAcceleration-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].maxAcceleration = parseFloat(event.target.value);
+            path.waypoints[i].maxAcceleration = parseFloat(event.target.value);
         });
         document.getElementById(`maxDeceleration-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].maxDeceleration = parseFloat(event.target.value);
+            path.waypoints[i].maxDeceleration = parseFloat(event.target.value);
         });
         document.getElementById(`endingVel-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].endingVelocity = parseFloat(event.target.value);
+            path.waypoints[i].endingVelocity = parseFloat(event.target.value);
         });
         document.getElementById(`calculate-ending-vel-${i}`).addEventListener("click", (event) => {
-            currentPath.updateWaypointEndingVelocity(i);
-            sidebar.updateSidebar();
+            path.updateWaypointEndingVelocity(i);
+            sidebar.updateSidebar(path);
         });
         document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].tolerance = parseFloat(event.target.value);
+            path.waypoints[i].tolerance = parseFloat(event.target.value);
         });
 
         document.getElementById(`link-${i}`).addEventListener("click", (event) => {
-            if (currentPath.selectedWaypointIndex != null && currentPath.selectedWaypointIndex != i) {
-                currentPath.waypoints[currentPath.selectedWaypointIndex].x -= currentPath.waypoints[i].x;
-                currentPath.waypoints[currentPath.selectedWaypointIndex].y -= currentPath.waypoints[i].y;
-                currentPath.waypoints[currentPath.selectedWaypointIndex].theta -= currentPath.waypoints[i].theta;
+            if (path.selectedWaypointIndex != null && path.selectedWaypointIndex != i) {
+                path.waypoints[path.selectedWaypointIndex].x -= path.waypoints[i].x;
+                path.waypoints[path.selectedWaypointIndex].y -= path.waypoints[i].y;
+                path.waypoints[path.selectedWaypointIndex].theta -= path.waypoints[i].theta;
 
-                currentPath.waypoints[currentPath.selectedWaypointIndex].linkTo(currentPath.waypoints[i]);
-                
-                renderer.redrawEverything();
-                sidebar.updateSidebar();
+                path.waypoints[path.selectedWaypointIndex].linkTo(path.waypoints[i]);
+
+                renderer.redrawEverything(path);
+                sidebar.updateSidebar(path);
             }
         });
     }
 }
 
+function updatePathButtons() {
+    document.getElementById("paths").innerHTML = '';
+    for (let i = 0; i < paths.length; i++) {
+        let pathButton = document.createElement("button");
+        pathButton.className = "path-name" + (paths[i].selected ? " selected" : "");
+        pathButton.id = `path-button-${i}`;
+        pathButton.innerText = paths[i].name;
+        pathButton.onclick = () => setNewPath(i);
+        document.getElementById("paths").appendChild(pathButton);
+    }
+
+    let addPathButton = document.createElement("button");
+    addPathButton.className = "path-name";
+    addPathButton.id = "add-path-button";
+    addPathButton.innerText = "+";
+    addPathButton.onclick = () => {
+        let newPath = new Path(`Path${paths.length + 1}`);
+        paths.push(newPath);
+        setNewPath(paths.length - 1);
+        updatePathButtons();
+    }
+
+    document.getElementById("paths").appendChild(addPathButton);
+
+    document.getElementById("path-input").value = currentPath.name;
+    document.getElementById("path-input").onchange = () => {
+        currentPath.name = document.getElementById("path-input").value;
+        updatePathButtons();
+    }
+}
+
+function setNewPath(index) {
+    currentPath.selected = false;
+    currentPath = paths[index];
+    paths[index].selected = true;
+    renderer.redrawEverything(currentPath);
+    sidebar.initializeSidebar(currentPath);
+    updatePathButtons();
+}
+
 window.addEventListener('initialize', () => {
-    addEventListenersToSidebarInputs();
+    addEventListenersToSidebarInputs(currentPath);
+    updatePathButtons();
 });
 
 // MARK: Mouse Inputs
-canvas.addEventListener('mousemove', (event) => {
+document.addEventListener('mousemove', (event) => {
     // Get the bounding rectangle of the canvas
     const rect = canvas.getBoundingClientRect();
     
     // Calculate mouse coordinates relative to the canvas
-    const mouseX = Renderer.convertXPixelsToInches(event.clientX - rect.left);
-    const mouseY = Renderer.convertYPixelsToInches(event.clientY - rect.top);
+    let mouseX = Renderer.convertXPixelsToInches(event.clientX - rect.left);
+    let mouseY = Renderer.convertYPixelsToInches(event.clientY - rect.top);
+
+    mouseX = Math.min(Math.max(mouseX, 0), FIELD_WIDTH);
+    mouseY = Math.min(Math.max(mouseY, 0), FIELD_HEIGHT);
 
     // if the mouse was clicked down on a waypoint but not moved yet
     if (state === "selecting") {
@@ -83,9 +127,9 @@ canvas.addEventListener('mousemove', (event) => {
     // if it's dragging a waypoint
     if (state === "dragging" && currentPath.selectedWaypointIndex != null) {
         currentPath.moveWaypoint(currentPath.selectedWaypointIndex, mouseX, mouseY);
-        renderer.redrawEverything();
-        sidebar.updateSidebar();
-        animator.resetAnimation();
+        renderer.redrawEverything(currentPath);
+        sidebar.updateSidebar(currentPath);
+        animator.resetAnimation(currentPath);
     }
     else {
         // check if the mouse is hovering over any of the waypoints
@@ -123,8 +167,8 @@ canvas.addEventListener('mousedown', (event) => {
             if ((state == "idle") && shiftHeld) {
                 // create a new waypoint
                 currentPath.addWaypoint(new Waypoint(mouseX, mouseY, 0).withName(`way${currentPath.waypoints.length}`));
-                sidebar.initializeSidebar();
-                addEventListenersToSidebarInputs();
+                sidebar.initializeSidebar(currentPath);
+                addEventListenersToSidebarInputs(currentPath);
             }
             currentPath.deselectWaypoint();
             state = "idle";
@@ -132,15 +176,15 @@ canvas.addEventListener('mousedown', (event) => {
         }
     }
 
-    renderer.redrawEverything();
-    sidebar.updateSidebar();
+    renderer.redrawEverything(currentPath);
+    sidebar.updateSidebar(currentPath);
 });
 
 canvas.addEventListener('mouseup', (event) => {
     if (state === "dragging") {
         currentPath.deselectWaypoint();
         state = "idle";
-        renderer.redrawEverything();
+        renderer.redrawEverything(currentPath);
     }
     else if (state === "selecting") {
         state = "selected";
@@ -162,10 +206,10 @@ document.addEventListener('keydown', (event) => {
             currentPath.removeSelectedWaypoint();
             currentPath.selectWaypoint(currentPath.waypoints.length - 1);
             state = "selected";
-            sidebar.initializeSidebar();
-            addEventListenersToSidebarInputs();
-            animator.resetAnimation();
-            renderer.redrawEverything();
+            sidebar.initializeSidebar(currentPath);
+            addEventListenersToSidebarInputs(currentPath);
+            animator.resetAnimation(currentPath);
+            renderer.redrawEverything(currentPath);
         }
     }
 
@@ -174,7 +218,7 @@ document.addEventListener('keydown', (event) => {
     }
 
     if (event.key == 'b') {
-        animator.toggleAnimation();
+        animator.toggleAnimation(currentPath);
     }
 
     // if (event.key == 'n') {
@@ -191,13 +235,13 @@ document.addEventListener('keydown', (event) => {
 
     if (event.key == 'ArrowRight') {
         currentPath.rotateSelectedWaypoint(-1);
-        sidebar.updateSidebar();
-        renderer.redrawEverything();
+        sidebar.updateSidebar(currentPath);
+        renderer.redrawEverything(currentPath);
     }
     if (event.key == 'ArrowLeft') {
         currentPath.rotateSelectedWaypoint(1);
-        sidebar.updateSidebar();
-        renderer.redrawEverything();
+        sidebar.updateSidebar(currentPath);
+        renderer.redrawEverything(currentPath);
     }
 });
 
@@ -209,20 +253,20 @@ document.addEventListener('keyup', (event) => {
 
 document.getElementById("add-waypoint").onclick = () => {
     currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${currentPath.waypoints.length}`));
-    sidebar.initializeSidebar();
-    addEventListenersToSidebarInputs();
-    renderer.redrawEverything();
+    sidebar.initializeSidebar(currentPath);
+    addEventListenersToSidebarInputs(currentPath);
+    renderer.redrawEverything(currentPath);
 };
 
-document.getElementById("add-path-break").onclick = () => {
-    currentPath.waypoints[currentPath.waypoints.length - 1].isPathBreak = true;
-    currentPath.waypoints[currentPath.waypoints.length - 1].endingVelocity = 0;
-    currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${currentPath.waypoints.length}`));
+// document.getElementById("add-path-break").onclick = () => {
+//     currentPath.waypoints[currentPath.waypoints.length - 1].isPathBreak = true;
+//     currentPath.waypoints[currentPath.waypoints.length - 1].endingVelocity = 0;
+//     currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${currentPath.waypoints.length}`));
     
-    sidebar.initializeSidebar();
-    addEventListenersToSidebarInputs();
-    renderer.redrawEverything();
-}
+//     sidebar.initializeSidebar(currentPath);
+//     addEventListenersToSidebarInputs(currentPath);
+//     renderer.redrawEverything(currentPath);
+// }
 
 // MARK: Settings
 document.getElementById("settings-button").onclick = () => {
@@ -254,9 +298,11 @@ uploadButton.addEventListener('click', async () => {
 
                     currentPath.addWaypoint(Waypoint.fromJson(element));
                 });
-                sidebar.initializeSidebar();
-                addEventListenersToSidebarInputs();
-                renderer.redrawEverything();
+                currentPath.name = jsonData.name;
+                updatePathButtons();
+                sidebar.initializeSidebar(currentPath);
+                addEventListenersToSidebarInputs(currentPath);
+                renderer.redrawEverything(currentPath);
 
                 alert("Successfully loaded JSON");
             }
@@ -283,6 +329,14 @@ exportButton.addEventListener('click', async () => {
     else {
         alert(`Export failed: ${response.error || response.message}`);
     }
+});
+
+const pushToRobotButton = document.getElementById('push-robot-btn');
+
+pushToRobotButton.addEventListener('click', async () => {
+    const response = await window.electronAPI.sendPathToRobot(currentPath.name, exporter.exportJson(currentPath));
+
+    alert(response.message);
 });
 
 // MARK: Timeline
@@ -316,7 +370,7 @@ document.addEventListener('mousemove', (event) => {
         animator.stopAnimation();
 
         renderer.robotDistance = currentPath.getDistanceAlongPath(time);
-        renderer.redrawEverything();
+        renderer.redrawEverything(currentPath);
 
         animator.stopAnimation();
 

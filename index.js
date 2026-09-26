@@ -1,6 +1,10 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+const execPromise = promisify(exec);
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 
 // Change this line in main.js:
 const StorePkg = require('electron-store');
@@ -54,6 +58,24 @@ ipcMain.handle('export-json', async (event, jsonData) => {
     return { success: true, filePath };
   } catch (error) {
     return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('send-path-to-robot', async (event, name, pathData) => {
+  const tempPath = path.join(os.tmpdir(), `${name}.json`);
+  fs.writeFileSync(tempPath, JSON.stringify(pathData, null, 2), 'utf-8');
+
+  const remotePath = '/sdcard/FIRST/paths/' + name + '.json';
+
+  var error = false;
+
+  try {
+    const { stdout, stderr } = await execPromise(`adb push "${tempPath}" "${remotePath}"`);
+    console.log('ADB push succeeded:', stdout);
+    return { success: true, message: 'Path sent successfully' };
+  } catch (err) {
+    console.error('ADB push failed:', err.stderr || err.message);
+    return { success: false, message: 'ADB push failed. '+err.stderr || err.message };
   }
 });
 

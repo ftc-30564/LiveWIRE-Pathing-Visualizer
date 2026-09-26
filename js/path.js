@@ -1,5 +1,7 @@
 class Path {
-    constructor() {
+    constructor(name) {
+        this.name = name;
+        this.selected = false;
         this.waypoints = [new Waypoint(50, 50, 0).withName("way0"), new Waypoint(75, 75, 45).withName("way1")];
         this.selectedWaypointIndex = null;
         this.totalAnimationTime;
