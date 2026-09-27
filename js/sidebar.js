@@ -4,15 +4,18 @@ const WAYPOINT_TOLERANCE = 3;
 
 
 class Sidebar {
-    constructor(renderer) {
+    constructor(renderer, pathManager) {
         this.renderer = renderer;
+        this.pathManager = pathManager;
     }
 
     // clears and writes all the html for the waypoints on the sidebar
-    initializeSidebar(path) {
+    initializeSidebar() {
         document.getElementById("waypoints").innerHTML = "";
 
-        for (let i = 0; i < path.waypoints.length; i++) {
+        let path = this.pathManager.currentPath;
+
+        for (let i = 0; i < this.pathManager.currentPath.waypoints.length; i++) {
             let html = "";
 
             html = `
@@ -97,16 +100,102 @@ class Sidebar {
         }
     }
 
-    updateSidebar(path) {
+    updateSidebar() {
+        let path = this.pathManager.currentPath;
         for (let i = 0; i < path.waypoints.length; i++) {
             document.getElementById(`x-${i}`).value = path.waypoints[i].x.toFixed(2);
             document.getElementById(`y-${i}`).value = path.waypoints[i].y.toFixed(2);
             document.getElementById(`theta-${i}`).value = path.waypoints[i].theta.toFixed(2);
-            document.getElementById(`maxAcceleration-${i}`).value = path.waypoints[i].maxAcceleration;
-            document.getElementById(`maxDeceleration-${i}`).value = path.waypoints[i].maxDeceleration;
-            document.getElementById(`maxVelocity-${i}`).value = path.waypoints[i].maxVelocity;
-            document.getElementById(`endingVel-${i}`).value = path.waypoints[i].endingVelocity;
-            document.getElementById(`tolerance-${i}`).value = path.waypoints[i].tolerance;
+
+            if (i != path.waypoints.length-1) {
+                document.getElementById(`maxVelocity-${i}`).value = path.waypoints[i].maxVelocity;
+            }
+            if (i != 0) {
+                document.getElementById(`maxDeceleration-${i}`).value = path.waypoints[i].maxDeceleration;
+            }
+            if (i != path.waypoints.length-1) {
+                document.getElementById(`maxAcceleration-${i}`).value = path.waypoints[i].maxAcceleration;
+            }
+            if (i != 0 && i != path.waypoints.length-1) {
+                document.getElementById(`endingVel-${i}`).value = path.waypoints[i].endingVelocity;
+            }
+            if (i != 0) {
+                document.getElementById(`tolerance-${i}`).value = path.waypoints[i].tolerance;
+            }
+        }
+    }
+
+    // adds event listeners to where anytime the inputs on the sidebar get changed, it updates the waypoint array, and redraws waypoints
+    addEventListenersToSidebarInputs() {
+        let path = this.pathManager.currentPath;
+        for (let i = 0; i < path.waypoints.length; i++) {
+            document.getElementById(`name-${i}`).addEventListener("input", (event) => {
+                path.waypoints[i].name = event.target.value;
+            })
+
+            document.getElementById(`x-${i}`).addEventListener("input", (event) => {
+                path.waypoints[i].x = parseFloat(event.target.value);
+                path.updateWaypointChain();
+                this.renderer.redrawEverything();
+            });
+            document.getElementById(`y-${i}`).addEventListener("input", (event) => {
+                path.waypoints[i].y = parseFloat(event.target.value);
+                path.updateWaypointChain();
+                this.renderer.redrawEverything();
+            });
+            document.getElementById(`theta-${i}`).addEventListener("input", (event) => {
+                path.waypoints[i].theta = parseFloat(event.target.value);
+                path.updateWaypointChain();
+                this.renderer.redrawEverything();
+            });
+
+            if (i != path.waypoints.length-1) {
+                document.getElementById(`maxVelocity-${i}`).addEventListener("input", (event) => {
+                    path.waypoints[i].maxVelocity = parseFloat(event.target.value);
+                });
+            }
+
+            if (i != path.waypoints.length-1) {
+                document.getElementById(`maxAcceleration-${i}`).addEventListener("input", (event) => {
+                    path.waypoints[i].maxAcceleration = parseFloat(event.target.value);
+                });
+            }
+
+            if (i != 0) {
+                document.getElementById(`maxDeceleration-${i}`).addEventListener("input", (event) => {
+                    path.waypoints[i].maxDeceleration = parseFloat(event.target.value);
+                });
+            }
+
+            if (i != path.waypoints.length-1 && i != 0) {
+                document.getElementById(`endingVel-${i}`).addEventListener("input", (event) => {
+                    path.waypoints[i].endingVelocity = parseFloat(event.target.value);
+                });
+
+                document.getElementById(`calculate-ending-vel-${i}`).addEventListener("click", (event) => {
+                    path.updateWaypointEndingVelocity(i);
+                    this.updateSidebar();
+                });
+            }
+
+            if (i != 0) {
+                document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
+                    path.waypoints[i].tolerance = parseFloat(event.target.value);
+                });
+            }
+
+            // document.getElementById(`link-${i}`).addEventListener("click", (event) => {
+            //     if (path.selectedWaypointIndex != null && path.selectedWaypointIndex != i) {
+            //         path.waypoints[path.selectedWaypointIndex].x -= path.waypoints[i].x;
+            //         path.waypoints[path.selectedWaypointIndex].y -= path.waypoints[i].y;
+            //         path.waypoints[path.selectedWaypointIndex].theta -= path.waypoints[i].theta;
+
+            //         path.waypoints[path.selectedWaypointIndex].linkTo(path.waypoints[i]);
+
+            //         renderer.redrawEverything(path);
+            //         sidebar.updateSidebar(path);
+            //     }
+            // });
         }
     }
 }

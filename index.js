@@ -43,10 +43,10 @@ ipcMain.handle('dialog:openJsonFile', async () => {
 });
 
 // For exporting JSON files
-ipcMain.handle('export-json', async (event, jsonData) => {
+ipcMain.handle('export-json', async (event, name, jsonData) => {
   const { canceled, filePath } = await dialog.showSaveDialog({
     title: 'Export JSON File',
-    defaultPath: path.join(app.getPath('downloads'), 'data.json'),
+    defaultPath: path.join(app.getPath('downloads'), `${name}.json`),
     filters: [{ name: 'JSON Files', extensions: ['json'] }]
   });
 
