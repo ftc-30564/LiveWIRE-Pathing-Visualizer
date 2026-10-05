@@ -188,9 +188,28 @@ class PathManager {
         this.currentIndex = 0;
     }
 
+    clearPaths() {
+        this.paths = [];
+        this.currentPath = null;
+        this.currentIndex = 0;
+    }
+
     addPath() {
         this.paths.push(new Path("Path" + (this.paths.length + 1)));
         this.setNewPath(this.paths.length - 1);
+    }
+    
+    addPathFromJson(obj) {
+        var newPath = new Path();
+        newPath.waypoints = [];
+        
+        newPath.name = obj.name;
+
+        obj.waypoints.forEach(waypointData => {
+            newPath.waypoints.push(Waypoint.fromJson(waypointData));
+        });
+
+        this.paths.push(newPath);
     }
 
     setNewPath(index) {

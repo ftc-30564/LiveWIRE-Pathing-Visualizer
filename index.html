@@ -9,12 +9,14 @@
 </head>
 <body>
     <div id="top">
-        <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; padding-right: 10px;">
+        <div style="display: flex; flex-direction: row; justify-content: left; width: 100%; align-items: center; gap: 10px; padding-right: 10px;">
             <button id="settings-button">Settings</button>
-            <button id="upload-btn">Upload JSON</button>
+            <button style="margin-left: 15px;" id="upload-btn">Upload JSON</button>
             <button id="export-btn">Download JSON</button>
-            <button id="load-robot-btn">Load from Robot</button>
+            <button style="margin-left: 15px;" id="load-robot-btn">Load from Robot</button>
             <button id="push-robot-btn">Push to Robot</button>
+            <button style="margin-left: auto;" id="check-devices-btn">Check for Robot</button>
+            <p style="color: red; margin-left: auto;" id="robot-connect-status">NOT CONNECTED</p>
         </div>
     </div>
     <div id="path-list">

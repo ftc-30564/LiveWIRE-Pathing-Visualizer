@@ -14,7 +14,7 @@ class Export {
         let pathIndex = 1;
         ret += `\n\n\t\tPath path = new Path${pathIndex}(${path.waypoints[0].name})`;
 
-        for (let x = 0; x < path.waypoints.length; x ++) {
+        for (let x = 1; x < path.waypoints.length; x ++) {
             // alert(x);
 
             ret += `\n\t\t\t.addWaypoint(${path.waypoints[x].name})`

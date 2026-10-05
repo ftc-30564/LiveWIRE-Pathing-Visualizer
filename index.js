@@ -67,8 +67,6 @@ ipcMain.handle('send-path-to-robot', async (event, name, pathData) => {
 
   const remotePath = '/sdcard/FIRST/paths/' + name + '.json';
 
-  var error = false;
-
   try {
     const { stdout, stderr } = await execPromise(`adb push "${tempPath}" "${remotePath}"`);
     console.log('ADB push succeeded:', stdout);
@@ -76,6 +74,49 @@ ipcMain.handle('send-path-to-robot', async (event, name, pathData) => {
   } catch (err) {
     console.error('ADB push failed:', err.stderr || err.message);
     return { success: false, message: 'ADB push failed. '+err.stderr || err.message };
+  }
+});
+
+ipcMain.handle('check-adb', async () => {
+  try {
+    await execPromise('adb connect 192.168.43.1:5555');
+    const { stdout, stderr } = await execPromise('adb devices');
+    console.log(stdout);
+    console.log(stdout.split('\n').length - 1);
+    if ((stdout.split('\n').length - 1) > 2) {
+      return { success: true, message: 'Robot is available' };
+    }
+    else {
+      return { success: false, message: 'Robot is not available' };
+    }
+    
+  } catch (err) {
+    console.error('ADB check failed:', err.stderr || err.message);
+    return { success: false, message: 'An error occured: ' + err.stderr || err.message };
+  }
+});
+
+ipcMain.handle('list-paths-on-robot', async () => {
+  try {
+    const { stdout, stderr } = await execPromise('adb shell ls /sdcard/FIRST/paths/');
+    console.log('Paths on robot:', stdout);
+    const paths = stdout.split('\n').splice(0, stdout.split('\n').length - 1).map(path => path.replace(/\r/g, ""));
+    console.log(paths);
+    return { success: true, paths: paths };
+  } catch (err) {
+    console.error('Listing paths failed:', err.stderr || err.message);
+    return { success: false, message: 'Failed to list paths on robot. '+err.stderr || err.message };
+  }
+});
+
+ipcMain.handle('load-path-on-robot', async (event, pathName) => {
+  try {
+    const { stdout, stderr } = await execPromise(`adb shell cat /sdcard/FIRST/paths/${pathName}`);
+    console.log('Path data from robot:', stdout);
+    return { success: true, data: JSON.parse(stdout) };
+  } catch (err) {
+    console.error('Loading path failed:', err.stderr || err.message);
+    return { success: false, message: 'Failed to load path from robot. '+err.stderr || err.message };
   }
 });
 
@@ -100,3 +141,14 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
+
+/* example
+3
+List of devices attached
+192.168.43.1:5555       device
+
+
+3
+List of devices attached
+192.168.43.1:5555       device
+*/

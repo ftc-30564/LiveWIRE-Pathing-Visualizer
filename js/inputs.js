@@ -245,6 +245,53 @@ document.getElementById("settings-exit").onclick = () => {
     document.getElementById("main").style.opacity = "100%";
 }
 
+const checkForRobotButton = document.getElementById('check-devices-btn');
+checkForRobotButton.addEventListener('click', async () => {
+    const response = await window.electronAPI.checkAdb();
+
+    alert(response.message);
+})
+
+setInterval(async () => {
+    const response = await window.electronAPI.checkAdb();
+
+    if (response.success) {
+        document.getElementById("robot-connect-status").innerText = "CONNECTED";
+        document.getElementById("robot-connect-status").style.color = "green";
+    }
+    else {
+        document.getElementById("robot-connect-status").innerText = "NOT CONNECTED";
+        document.getElementById("robot-connect-status").style.color = "red";
+    }
+}, 1000)
+
+const loadFromRobotButton = document.getElementById('load-robot-btn');
+loadFromRobotButton.addEventListener('click', async () => {
+    const response = await window.electronAPI.listPathsOnRobot();
+
+    if (response.success) {
+        alert(response.paths);
+
+        pathManager.clearPaths();
+        response.paths.forEach(async name => {
+            const pathResponse = await window.electronAPI.loadPathOnRobot(name);
+            if (pathResponse.success) {
+                alert("Successfully loaded path " + name);
+                pathManager.addPathFromJson(pathResponse.data);
+            }
+            else {
+                alert("ERROR while loading path " + name);
+            }
+        });
+
+        setNewPath(0);
+        updatePathButtons();
+    }
+    else {
+        alert(response.message);
+    }
+});
+
 const uploadButton = document.getElementById('upload-btn');
 
 // MARK: JSON
