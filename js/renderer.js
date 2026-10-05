@@ -5,15 +5,15 @@ const canvas = document.getElementById("field-canvas");
 const ctx = canvas.getContext("2d");
 
 class Renderer {
-    constructor(currentPath) {
-        this.currentPath = currentPath;
+    constructor(pathManager) {
         this.robot = new Robot();
+        this.pathManager = pathManager;
 
         this.fieldImage = new Image();
         this.fieldImage.src = "biobuzz-field-rotated.png";
 
         this.fieldImage.onload = () => {
-            this.redrawEverything();
+            this.redrawEverything(this.pathManager.paths);
         };
 
         this.robotDistance = 0;
@@ -78,58 +78,70 @@ class Renderer {
 
     // draws given waypoints on the field
     drawWaypoints() {
-        let pathBreaks = this.currentPath.getDistancesOfPathBreaks();
 
-        pathBreaks.unshift(0);
+        for (let x = 0; x < this.pathManager.paths.length; x++) {
+            let path = this.pathManager.paths[x];
 
+            if (!path.isVisible) {
+                continue;
+            }
+        // let pathBreaks = path.getDistancesOfPathBreaks();
+        // pathBreaks.unshift(0);
         // alert(pathBreaks);
+        // let currentRobotPathBreakIndex = 0;
+        // for (let i = 0; i < pathBreaks.length-1; i++) {
+        //     if ((this.robotDistance >= pathBreaks[i]) && (this.robotDistance < pathBreaks[i+1])) {
+        //         currentRobotPathBreakIndex = i;
+        //         break;
+        //     }
+        // }
 
-        let currentRobotPathBreakIndex = 0;
+            for (let i = 0; i < path.waypoints.length; i++) {
+                let waypoint = path.waypoints[i];
+                let x = Renderer.convertXInchesToPixels(waypoint.getAbsoluteWaypoint().x);
+                let y = Renderer.convertYInchesToPixels(waypoint.getAbsoluteWaypoint().y);
+                let theta = waypoint.getAbsoluteWaypoint().theta;
 
-        for (let i = 0; i < pathBreaks.length-1; i++) {
-            if ((this.robotDistance >= pathBreaks[i]) && (this.robotDistance < pathBreaks[i+1])) {
-                currentRobotPathBreakIndex = i;
-                break;
-            }
-        }
-
-        for (let i = 0; i < this.currentPath.waypoints.length; i++) {
-            let waypoint = this.currentPath.waypoints[i];
-            let x = Renderer.convertXInchesToPixels(waypoint.getAbsoluteWaypoint().x);
-            let y = Renderer.convertYInchesToPixels(waypoint.getAbsoluteWaypoint().y);
-            let theta = waypoint.getAbsoluteWaypoint().theta;
-
-            this.drawArrow(x, y, ((theta) * Math.PI) / 180, 18);
-
-            if (i != this.currentPath.waypoints.length-1) {
-                ctx.lineWidth = 3;
-                if ((this.currentPath.waypoints[i].distanceIntoPath >= pathBreaks[currentRobotPathBreakIndex] &&
-                    this.currentPath.waypoints[i].distanceIntoPath <= pathBreaks[currentRobotPathBreakIndex + 1]) &&
-                    (this.currentPath.waypoints[i+1].distanceIntoPath >= pathBreaks[currentRobotPathBreakIndex] &&
-                    this.currentPath.waypoints[i+1].distanceIntoPath <= pathBreaks[currentRobotPathBreakIndex + 1])) {
-                    ctx.strokeStyle = "rgb(71, 182, 255)";
+                if (path.selected) {
+                    this.drawArrow(x, y, ((theta) * Math.PI) / 180, 18);
                 }
-                else {
-                    ctx.strokeStyle = "white";
+                
+
+                if (i != path.waypoints.length-1) {
+                    ctx.lineWidth = 3;
+                    // if ((path.waypoints[i].distanceIntoPath >= pathBreaks[currentRobotPathBreakIndex] &&
+                    //     path.waypoints[i].distanceIntoPath <= pathBreaks[currentRobotPathBreakIndex + 1]) &&
+                    //     (path.waypoints[i+1].distanceIntoPath >= pathBreaks[currentRobotPathBreakIndex] &&
+                    //     path.waypoints[i+1].distanceIntoPath <= pathBreaks[currentRobotPathBreakIndex + 1])) {
+                    //     ctx.strokeStyle = "rgb(71, 182, 255)";
+                    // }
+                    // else {
+                    if (path.selected) {
+                        ctx.strokeStyle = "rgba(255, 255, 255, 1.0)";
+                    }
+                    else {
+                        ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+                    }
+                    // }
+                    ctx.lineCap = "butt";
+                    ctx.beginPath();
+                    ctx.moveTo(Renderer.convertXInchesToPixels(path.waypoints[i].getAbsoluteWaypoint().x), Renderer.convertYInchesToPixels(path.waypoints[i].getAbsoluteWaypoint().y));
+                    ctx.lineTo(Renderer.convertXInchesToPixels(path.waypoints[i+1].getAbsoluteWaypoint().x), Renderer.convertYInchesToPixels(path.waypoints[i+1].getAbsoluteWaypoint().y));
+                    ctx.stroke();
                 }
-                ctx.lineCap = "butt";
-                ctx.beginPath();
-                ctx.moveTo(Renderer.convertXInchesToPixels(this.currentPath.waypoints[i].getAbsoluteWaypoint().x), Renderer.convertYInchesToPixels(this.currentPath.waypoints[i].getAbsoluteWaypoint().y));
-                ctx.lineTo(Renderer.convertXInchesToPixels(this.currentPath.waypoints[i+1].getAbsoluteWaypoint().x), Renderer.convertYInchesToPixels(this.currentPath.waypoints[i+1].getAbsoluteWaypoint().y));
-                ctx.stroke();
-            }
 
-            ctx.beginPath();
-            ctx.arc(x, y, 8, 0, 2 * Math.PI);
-            ctx.fillStyle = "white";
-            ctx.fill();
-
-            if (waypoint.selected) {
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = "rgb(0, 143, 238)";
                 ctx.beginPath();
-                ctx.arc(x, y, 12, 0, 2 * Math.PI);
-                ctx.stroke();
+                ctx.arc(x, y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = "white";
+                ctx.fill();
+
+                if (waypoint.selected) {
+                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = "rgb(0, 143, 238)";
+                    ctx.beginPath();
+                    ctx.arc(x, y, 12, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
             }
         }   
     }
@@ -141,13 +153,19 @@ class Renderer {
         this.clear();
         this.drawImage();
         this.drawWaypoints();
-        this.robot.drawOntoPath(this.robotDistance, this.currentPath.waypoints);
+        for (let x = 0; x < this.pathManager.paths.length; x++) {
+            if (this.pathManager.paths[x].selected) {
+                this.robot.drawOntoPath(this.robotDistance, this.pathManager.paths[x].waypoints);
+                break;
+            }
+        }
     }
 }
 
 class Animator {
-    constructor(renderer) {
+    constructor(renderer, pathManager) {
         this.renderer = renderer;
+        this.pathManager = pathManager;
         this.running = false;
         this.startTime = 0;
         this.offsetTime = 0;
@@ -165,14 +183,15 @@ class Animator {
         this.startTime = performance.now();
         this.running = false;
         this.renderer.redrawEverything();
-        currentPath.computeTimeSegments();
+
+        this.pathManager.currentPath.computeTimeSegments();
     }
 
     startAnimation() {
         if (this.running) {
             return;
         }
-        currentPath.computeTimeSegments();
+        this.pathManager.currentPath.computeTimeSegments();
         this.running = true;
                 
         let timelinePercent = parseFloat(document.getElementById('timeline-handle').style.left) / 100;
@@ -181,7 +200,7 @@ class Animator {
         }
         // alert(timelinePercent);
         // alert(timelinePercent);
-        this.startTime = performance.now() - (timelinePercent * currentPath.totalAnimationTime * 1000);
+        this.startTime = performance.now() - (timelinePercent * this.pathManager.currentPath.totalAnimationTime * 1000);
         // alert(this.startTime);
         requestAnimationFrame(() => this.runAnimationTime());
     }
@@ -189,7 +208,7 @@ class Animator {
     runAnimationDistance() {
         this.renderer.robotDistance += 0.7;        
 
-        if (this.renderer.robotDistance > this.renderer.currentPath.waypoints[this.renderer.currentPath.waypoints.length-1].distanceIntoPath) {
+        if (this.renderer.robotDistance > this.pathManager.currentPath.waypoints[this.pathManager.currentPath.waypoints.length-1].distanceIntoPath) {
             this.renderer.robotDistance = 0;
         }
 
@@ -203,15 +222,15 @@ class Animator {
     runAnimationTime() {
         let time = (performance.now() - this.startTime) / 1000;
 
-        this.renderer.robotDistance = currentPath.getDistanceAlongPath(time);
+        this.renderer.robotDistance = this.pathManager.currentPath.getDistanceAlongPath(time);
         this.renderer.redrawEverything();
-        
-        const percent = time / currentPath.totalAnimationTime;
+
+        const percent = time / this.pathManager.currentPath.totalAnimationTime;
 
         document.getElementById('timeline-handle').style.left = `${percent * 100}%`;
         document.getElementById('timeline-progress').style.width = `${percent * 100}%`;
 
-        if (time > currentPath.totalAnimationTime) {
+        if (time > this.pathManager.currentPath.totalAnimationTime) {
             this.startTime = performance.now();
         }
 

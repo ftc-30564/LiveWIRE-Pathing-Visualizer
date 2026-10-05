@@ -9,23 +9,32 @@
 </head>
 <body>
     <div id="top">
-        <div>
-            <button id="clear-btn">Test</button>
+        <div style="display: flex; flex-direction: row; justify-content: left; width: 100%; align-items: center; gap: 10px; padding-right: 10px;">
+            <button id="settings-button">Settings</button>
+            <button style="margin-left: 15px;" id="upload-btn">Upload JSON</button>
+            <button id="export-btn">Download JSON</button>
+            <button style="margin-left: 15px;" id="load-robot-btn">Load from Robot</button>
+            <button id="push-robot-btn">Push to Robot</button>
+            <button style="margin-left: auto;" id="check-devices-btn">Check for Robot</button>
+            <p style="color: red; margin-left: auto;" id="robot-connect-status">NOT CONNECTED</p>
         </div>
-        <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; padding-right: 10px;">
-            <p style="padding: 5px; margin-left: 10px; cursor: pointer;" id="settings-button">Settings</p>
-            <button id="upload-btn">Upload</button>
-            <button id="export-btn">Export</button>
+    </div>
+    <div id="path-list">
+        <div id="paths">
+            <button class="path-name selected" id="path-button-0">
+                Path1
+            </button>
         </div>
     </div>
     <div id="main">
         <div id="sidebar">
+            <label for="path-input">Path Name:</label>
+            <input type="text" id="path-input" value="Path1">
             <div id="waypoints">
                     
             </div>
             <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
                 <button id="add-waypoint">+   Add Waypoint   +</button>
-                <button id="add-path-break">+   Add Path Break   +</button>
             </div>
 
         </div>

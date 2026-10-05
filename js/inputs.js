@@ -4,76 +4,86 @@ var state = "idle"; // idle, dragging, selecting, selected
 var selectedWaypointIndex = null;
 var shiftHeld = false;
 
-// adds event listeners to where anytime the inputs on the sidebar get changed, it updates the waypoint array, and redraws waypoints
-function addEventListenersToSidebarInputs() {
-    for (let i = 0; i < currentPath.waypoints.length; i++) {
-        document.getElementById(`name-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].name = event.target.value;
-        })
+function updatePathButtons() {
+    document.getElementById("paths").innerHTML = '';
+    for (let i = 0; i < pathManager.paths.length; i++) {
+        let pathDiv = document.createElement("div");
+        pathDiv.className = "path-button-container" + (pathManager.paths[i].selected ? " selected" : "");
 
-        document.getElementById(`x-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].x = parseFloat(event.target.value);
-            currentPath.updateWaypointChain();
+        if (pathManager.paths[i].selected) {
+            pathManager.paths[i].isVisible = true;
+        }
+
+        let pathButton = document.createElement("button");
+        pathButton.className = "path-name" + (pathManager.paths[i].selected ? " selected" : "");
+        pathButton.id = `path-button-${i}`;
+        pathButton.innerText = pathManager.paths[i].name;
+        pathButton.onclick = () => setNewPath(i);
+        pathDiv.appendChild(pathButton);
+
+        let isVisibleCheckbox = document.createElement("input");
+        isVisibleCheckbox.className = "path-visible-checkbox";
+        isVisibleCheckbox.type = "checkbox";
+        isVisibleCheckbox.checked = pathManager.paths[i].isVisible;
+        
+        isVisibleCheckbox.onchange = () => {
+            pathManager.paths[i].isVisible = isVisibleCheckbox.checked;
             renderer.redrawEverything();
-        });
-        document.getElementById(`y-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].y = parseFloat(event.target.value);
-            currentPath.updateWaypointChain();
-            renderer.redrawEverything();
-        });
-        document.getElementById(`theta-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].theta = parseFloat(event.target.value);
-            currentPath.updateWaypointChain();
-            renderer.redrawEverything();
-        });
+        };
+        pathDiv.appendChild(isVisibleCheckbox);
 
-        document.getElementById(`maxVelocity-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].maxVelocity = parseFloat(event.target.value);
-        });
-        document.getElementById(`maxAcceleration-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].maxAcceleration = parseFloat(event.target.value);
-        });
-        document.getElementById(`maxDeceleration-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].maxDeceleration = parseFloat(event.target.value);
-        });
-        document.getElementById(`endingVel-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].endingVelocity = parseFloat(event.target.value);
-        });
-        document.getElementById(`calculate-ending-vel-${i}`).addEventListener("click", (event) => {
-            currentPath.updateWaypointEndingVelocity(i);
-            sidebar.updateSidebar();
-        });
-        document.getElementById(`tolerance-${i}`).addEventListener("input", (event) => {
-            currentPath.waypoints[i].tolerance = parseFloat(event.target.value);
-        });
+        document.getElementById("paths").appendChild(pathDiv);
+    }
 
-        document.getElementById(`link-${i}`).addEventListener("click", (event) => {
-            if (currentPath.selectedWaypointIndex != null && currentPath.selectedWaypointIndex != i) {
-                currentPath.waypoints[currentPath.selectedWaypointIndex].x -= currentPath.waypoints[i].x;
-                currentPath.waypoints[currentPath.selectedWaypointIndex].y -= currentPath.waypoints[i].y;
-                currentPath.waypoints[currentPath.selectedWaypointIndex].theta -= currentPath.waypoints[i].theta;
+    let addPathButton = document.createElement("button");
+    addPathButton.className = "path-name";
+    addPathButton.id = "add-path-button";
+    addPathButton.innerText = "+";
+    addPathButton.onclick = () => {
+        pathManager.addPath();
+        renderer.redrawEverything();
+        sidebar.initializeSidebar();
+        sidebar.addEventListenersToSidebarInputs();
+        sidebar.updateSidebar();
+        animator.resetAnimation();
+        updatePathButtons();
+    }
 
-                currentPath.waypoints[currentPath.selectedWaypointIndex].linkTo(currentPath.waypoints[i]);
-                
-                renderer.redrawEverything();
-                sidebar.updateSidebar();
-            }
-        });
+    document.getElementById("paths").appendChild(addPathButton);
+
+    document.getElementById("path-input").value = pathManager.currentPath.name;
+    document.getElementById("path-input").onchange = () => {
+        pathManager.currentPath.name = document.getElementById("path-input").value;
+        updatePathButtons();
     }
 }
 
+function setNewPath(index) {
+    pathManager.setNewPath(index);
+    renderer.redrawEverything();
+    sidebar.initializeSidebar();
+    sidebar.addEventListenersToSidebarInputs();
+    sidebar.updateSidebar();
+    animator.resetAnimation();
+    updatePathButtons();
+}
+
 window.addEventListener('initialize', () => {
-    addEventListenersToSidebarInputs();
+    sidebar.addEventListenersToSidebarInputs();
+    updatePathButtons();
 });
 
 // MARK: Mouse Inputs
-canvas.addEventListener('mousemove', (event) => {
+document.addEventListener('mousemove', (event) => {
     // Get the bounding rectangle of the canvas
     const rect = canvas.getBoundingClientRect();
     
     // Calculate mouse coordinates relative to the canvas
-    const mouseX = Renderer.convertXPixelsToInches(event.clientX - rect.left);
-    const mouseY = Renderer.convertYPixelsToInches(event.clientY - rect.top);
+    let mouseX = Renderer.convertXPixelsToInches(event.clientX - rect.left);
+    let mouseY = Renderer.convertYPixelsToInches(event.clientY - rect.top);
+
+    mouseX = Math.min(Math.max(mouseX, 0), FIELD_WIDTH);
+    mouseY = Math.min(Math.max(mouseY, 0), FIELD_HEIGHT);
 
     // if the mouse was clicked down on a waypoint but not moved yet
     if (state === "selecting") {
@@ -81,8 +91,8 @@ canvas.addEventListener('mousemove', (event) => {
     }
 
     // if it's dragging a waypoint
-    if (state === "dragging" && currentPath.selectedWaypointIndex != null) {
-        currentPath.moveWaypoint(currentPath.selectedWaypointIndex, mouseX, mouseY);
+    if (state === "dragging" && pathManager.currentPath.selectedWaypointIndex != null) {
+        pathManager.currentPath.moveWaypoint(pathManager.currentPath.selectedWaypointIndex, mouseX, mouseY);
         renderer.redrawEverything();
         sidebar.updateSidebar();
         animator.resetAnimation();
@@ -90,12 +100,12 @@ canvas.addEventListener('mousemove', (event) => {
     else {
         // check if the mouse is hovering over any of the waypoints
         // if so, change mouse to pointer
-        for (let x = 0; x < currentPath.waypoints.length; x ++) {
-            if (Renderer.isWithinSquare(mouseX, mouseY, currentPath.waypoints[x].getAbsoluteWaypoint().x, currentPath.waypoints[x].getAbsoluteWaypoint().y, WAYPOINT_TOLERANCE)) {
+        for (let x = 0; x < pathManager.currentPath.waypoints.length; x ++) {
+            if (Renderer.isWithinSquare(mouseX, mouseY, pathManager.currentPath.waypoints[x].getAbsoluteWaypoint().x, pathManager.currentPath.waypoints[x].getAbsoluteWaypoint().y, WAYPOINT_TOLERANCE)) {
                 document.body.style.cursor = 'pointer';
                 break;
             }
-            if (x === currentPath.waypoints.length - 1) {
+            if (x === pathManager.currentPath.waypoints.length - 1) {
                 document.body.style.cursor = 'default';
             }
         }
@@ -110,23 +120,23 @@ canvas.addEventListener('mousedown', (event) => {
     const mouseX = Renderer.convertXPixelsToInches(event.clientX - rect.left);
     const mouseY = Renderer.convertYPixelsToInches(event.clientY - rect.top);
 
-    for (let x = 0; x < currentPath.waypoints.length; x ++) {
+    for (let x = 0; x < pathManager.currentPath.waypoints.length; x ++) {
         // if the user click is on a waypoint
-        if (Renderer.isWithinSquare(mouseX, mouseY, currentPath.waypoints[x].getAbsoluteWaypoint().x, currentPath.waypoints[x].getAbsoluteWaypoint().y, WAYPOINT_TOLERANCE)) {
-            currentPath.selectWaypoint(x);
+        if (Renderer.isWithinSquare(mouseX, mouseY, pathManager.currentPath.waypoints[x].getAbsoluteWaypoint().x, pathManager.currentPath.waypoints[x].getAbsoluteWaypoint().y, WAYPOINT_TOLERANCE)) {
+            pathManager.currentPath.selectWaypoint(x);
             state = "selecting";
             break;
         }
 
         // if the user click isn't on a waypoint
-        if (x === currentPath.waypoints.length - 1) {
+        if (x === pathManager.currentPath.waypoints.length - 1) {
             if ((state == "idle") && shiftHeld) {
                 // create a new waypoint
-                currentPath.addWaypoint(new Waypoint(mouseX, mouseY, 0).withName(`way${currentPath.waypoints.length}`));
+                pathManager.currentPath.addWaypoint(new Waypoint(mouseX, mouseY, 0).withName(`way${pathManager.currentPath.waypoints.length}`));
                 sidebar.initializeSidebar();
-                addEventListenersToSidebarInputs();
+                sidebar.addEventListenersToSidebarInputs();
             }
-            currentPath.deselectWaypoint();
+            pathManager.currentPath.deselectWaypoint();
             state = "idle";
             break;
         }
@@ -138,7 +148,7 @@ canvas.addEventListener('mousedown', (event) => {
 
 canvas.addEventListener('mouseup', (event) => {
     if (state === "dragging") {
-        currentPath.deselectWaypoint();
+        pathManager.currentPath.deselectWaypoint();
         state = "idle";
         renderer.redrawEverything();
     }
@@ -146,7 +156,7 @@ canvas.addEventListener('mouseup', (event) => {
         state = "selected";
     }
     else if (state == "selected") {
-        currentPath.deselectWaypoint();
+        pathManager.currentPath.deselectWaypoint();
         state = "idle";
     }
 });
@@ -154,16 +164,16 @@ canvas.addEventListener('mouseup', (event) => {
 // MARK: Key Inputs
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Delete' || event.key == 'Backspace') {
-        if (currentPath.waypoints.length == 1) {
+        if (pathManager.currentPath.waypoints.length == 1) {
             return;
         }
         if (state == "selected" || state == "selecting") {
             // remove the selected waypoint
-            currentPath.removeSelectedWaypoint();
-            currentPath.selectWaypoint(currentPath.waypoints.length - 1);
+            pathManager.currentPath.removeSelectedWaypoint();
+            pathManager.currentPath.selectWaypoint(pathManager.currentPath.waypoints.length - 1);
             state = "selected";
             sidebar.initializeSidebar();
-            addEventListenersToSidebarInputs();
+            sidebar.addEventListenersToSidebarInputs();
             animator.resetAnimation();
             renderer.redrawEverything();
         }
@@ -186,16 +196,16 @@ document.addEventListener('keydown', (event) => {
     // }
 
     if (event.key == 'j') {
-        exporter.toggleJava(currentPath);
+        exporter.toggleJava(pathManager.currentPath);
     }
 
     if (event.key == 'ArrowRight') {
-        currentPath.rotateSelectedWaypoint(-1);
+        pathManager.currentPath.rotateSelectedWaypoint(-1);
         sidebar.updateSidebar();
         renderer.redrawEverything();
     }
     if (event.key == 'ArrowLeft') {
-        currentPath.rotateSelectedWaypoint(1);
+        pathManager.currentPath.rotateSelectedWaypoint(1);
         sidebar.updateSidebar();
         renderer.redrawEverything();
     }
@@ -208,21 +218,21 @@ document.addEventListener('keyup', (event) => {
 })
 
 document.getElementById("add-waypoint").onclick = () => {
-    currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${currentPath.waypoints.length}`));
+    pathManager.currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${pathManager.currentPath.waypoints.length}`));
     sidebar.initializeSidebar();
-    addEventListenersToSidebarInputs();
+    sidebar.addEventListenersToSidebarInputs();
     renderer.redrawEverything();
 };
 
-document.getElementById("add-path-break").onclick = () => {
-    currentPath.waypoints[currentPath.waypoints.length - 1].isPathBreak = true;
-    currentPath.waypoints[currentPath.waypoints.length - 1].endingVelocity = 0;
-    currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${currentPath.waypoints.length}`));
+// document.getElementById("add-path-break").onclick = () => {
+//     pathManager.currentPath.waypoints[pathManager.currentPath.waypoints.length - 1].isPathBreak = true;
+//     pathManager.currentPath.waypoints[pathManager.currentPath.waypoints.length - 1].endingVelocity = 0;
+//     pathManager.currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${pathManager.currentPath.waypoints.length}`));
     
-    sidebar.initializeSidebar();
-    addEventListenersToSidebarInputs();
-    renderer.redrawEverything();
-}
+//     sidebar.initializeSidebar();
+//     sidebar.addEventListenersToSidebarInputs();
+//     renderer.redrawEverything(paths);
+// }
 
 // MARK: Settings
 document.getElementById("settings-button").onclick = () => {
@@ -235,6 +245,53 @@ document.getElementById("settings-exit").onclick = () => {
     document.getElementById("main").style.opacity = "100%";
 }
 
+const checkForRobotButton = document.getElementById('check-devices-btn');
+checkForRobotButton.addEventListener('click', async () => {
+    const response = await window.electronAPI.checkAdb();
+
+    alert(response.message);
+})
+
+setInterval(async () => {
+    const response = await window.electronAPI.checkAdb();
+
+    if (response.success) {
+        document.getElementById("robot-connect-status").innerText = "CONNECTED";
+        document.getElementById("robot-connect-status").style.color = "green";
+    }
+    else {
+        document.getElementById("robot-connect-status").innerText = "NOT CONNECTED";
+        document.getElementById("robot-connect-status").style.color = "red";
+    }
+}, 1000)
+
+const loadFromRobotButton = document.getElementById('load-robot-btn');
+loadFromRobotButton.addEventListener('click', async () => {
+    const response = await window.electronAPI.listPathsOnRobot();
+
+    if (response.success) {
+        alert(response.paths);
+
+        pathManager.clearPaths();
+        response.paths.forEach(async name => {
+            const pathResponse = await window.electronAPI.loadPathOnRobot(name);
+            if (pathResponse.success) {
+                alert("Successfully loaded path " + name);
+                pathManager.addPathFromJson(pathResponse.data);
+            }
+            else {
+                alert("ERROR while loading path " + name);
+            }
+        });
+
+        setNewPath(0);
+        updatePathButtons();
+    }
+    else {
+        alert(response.message);
+    }
+});
+
 const uploadButton = document.getElementById('upload-btn');
 
 // MARK: JSON
@@ -245,23 +302,26 @@ uploadButton.addEventListener('click', async () => {
         if (jsonData) {
 
             try {
-                currentPath.waypoints = [];
+                pathManager.currentPath.waypoints = [];
 
                 // alert(jsonData.waypoints[0].x);
 
 
                 jsonData.waypoints.forEach(element => {
 
-                    currentPath.addWaypoint(Waypoint.fromJson(element));
+                    pathManager.currentPath.addWaypoint(Waypoint.fromJson(element));
                 });
+                pathManager.currentPath.name = jsonData.name;
+                updatePathButtons();
                 sidebar.initializeSidebar();
-                addEventListenersToSidebarInputs();
+                sidebar.addEventListenersToSidebarInputs();
                 renderer.redrawEverything();
 
                 alert("Successfully loaded JSON");
             }
             catch (error) {
                 alert("Unable to load, there might be an error of some sorts");
+                alert(error);
             }
         // Do something with your data here (e.g., update the DOM)
         } 
@@ -275,7 +335,7 @@ const exportButton = document.getElementById('export-btn');
 
 exportButton.addEventListener('click', async () => {
 
-    const response = await window.electronAPI.exportJSON(exporter.exportJson(currentPath));
+    const response = await window.electronAPI.exportJSON(pathManager.currentPath.name, exporter.exportJson(pathManager.currentPath));
 
     if (response.success) {
         alert(`File exported successfully to: ${response.filePath}`);
@@ -285,12 +345,20 @@ exportButton.addEventListener('click', async () => {
     }
 });
 
+const pushToRobotButton = document.getElementById('push-robot-btn');
+
+pushToRobotButton.addEventListener('click', async () => {
+    const response = await window.electronAPI.sendPathToRobot(pathManager.currentPath.name, exporter.exportJson(pathManager.currentPath));
+
+    alert(response.message);
+});
+
 // MARK: Timeline
 
 let dragging = false;
 
 document.getElementById('timeline').addEventListener('mousedown', (event) => {
-    currentPath.computeTimeSegments();
+    pathManager.currentPath.computeTimeSegments();
 
     dragging = true;
 });
@@ -311,11 +379,11 @@ document.addEventListener('mousemove', (event) => {
         // clamp between 0 and 1
         percent = Math.min(Math.max(percent, 0), 1);
 
-        const time = percent * currentPath.totalAnimationTime;
+        const time = percent * pathManager.currentPath.totalAnimationTime;
 
         animator.stopAnimation();
 
-        renderer.robotDistance = currentPath.getDistanceAlongPath(time);
+        renderer.robotDistance = pathManager.currentPath.getDistanceAlongPath(time);
         renderer.redrawEverything();
 
         animator.stopAnimation();

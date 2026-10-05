@@ -1,5 +1,8 @@
 class Path {
-    constructor() {
+    constructor(name) {
+        this.name = name;
+        this.selected = false;
+        this.isVisible = false;
         this.waypoints = [new Waypoint(50, 50, 0).withName("way0"), new Waypoint(75, 75, 45).withName("way1")];
         this.selectedWaypointIndex = null;
         this.totalAnimationTime;
@@ -175,5 +178,50 @@ class Path {
         }
 
         return this.waypoints[this.waypoints.length-1].distanceIntoPath;
+    }
+}
+
+class PathManager {
+    constructor() {
+        this.paths = [];
+        this.currentPath = null;
+        this.currentIndex = 0;
+    }
+
+    clearPaths() {
+        this.paths = [];
+        this.currentPath = null;
+        this.currentIndex = 0;
+    }
+
+    addPath() {
+        this.paths.push(new Path("Path" + (this.paths.length + 1)));
+        this.setNewPath(this.paths.length - 1);
+    }
+    
+    addPathFromJson(obj) {
+        var newPath = new Path();
+        newPath.waypoints = [];
+        
+        newPath.name = obj.name;
+
+        obj.waypoints.forEach(waypointData => {
+            newPath.waypoints.push(Waypoint.fromJson(waypointData));
+        });
+
+        this.paths.push(newPath);
+    }
+
+    setNewPath(index) {
+        if (index < 0 || index >= this.paths.length) {
+            console.error("Invalid path index: " + index);
+            return;
+        }
+        if (this.currentPath) {
+            this.currentPath.selected = false;
+        }
+        this.currentPath = this.paths[index];
+        this.currentPath.selected = true;
+        this.currentIndex = index;
     }
 }
