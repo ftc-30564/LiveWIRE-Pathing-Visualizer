@@ -7,40 +7,45 @@ var shiftHeld = false;
 var pathHistory = [];
 
 function savePathsToHistory() {
-    let paths = [];
+    let pathSnap = new PathSnapshot();
     for (let path of pathManager.paths) {
         let newPath = new Path(path.name);
         newPath.waypoints = path.waypoints.map(wp => Waypoint.newWaypoint(wp.name, wp.x, wp.y, wp.theta, wp.maxVelocity, wp.maxAcceleration, wp.maxDeceleration, wp.endingVelocity, wp.tolerance));
-        paths.push(newPath);
+        newPath.selected = path.selected;
+        newPath.isVisible = path.isVisible;
+
+        pathSnap.currentIndex = pathManager.currentIndex;
+        pathSnap.paths.push(newPath);
     }
-    pathHistory.push(paths);
+    pathHistory.push(pathSnap);
     if (pathHistory.length > 20) {
         pathHistory.shift();
     }
 }
 
 // Undo/Redo functionality
-function undo(renderer, pathManager, sidebar) {
+function undo() {
     // alert("undoing");
     if (pathHistory.length > 0) {
         // alert("in effect");
         // alert(pathHistory.length);
         // alert(pathHistory[pathHistory.length - 1]);
-        pathManager.setPaths(pathHistory.pop());
+        pathManager.setPathSnapshot(pathHistory.pop());
         // pathManager.currentPath = pathManager.paths[pathManager.paths.length - 1];
         // pathManager.currentIndex = pathManager.paths.length - 1;
         renderer.robotDistance = 0;
         sidebar.initializeSidebar();
-
         sidebar.addEventListenersToSidebarInputs();
         sidebar.updateSidebar();
-        renderer.redrawEverything();
         
         updatePathButtons();
+
+        renderer.redrawEverything();
+        animator.resetAnimation();
     }
 }
 
-window.electronAPI.onUndo(() => undo(renderer, pathManager, sidebar));
+window.electronAPI.onUndo(() => undo());
 
 function updatePathButtons() {
     document.getElementById("paths").innerHTML = '';
@@ -80,12 +85,12 @@ function updatePathButtons() {
     addPathButton.onclick = () => {
         savePathsToHistory();
         pathManager.addPath();
-        renderer.redrawEverything();
         sidebar.initializeSidebar();
         sidebar.addEventListenersToSidebarInputs();
         sidebar.updateSidebar();
         animator.resetAnimation();
         updatePathButtons();
+        renderer.redrawEverything();
     }
 
     document.getElementById("paths").appendChild(addPathButton);
@@ -208,7 +213,7 @@ document.addEventListener('keydown', (event) => {
             return;
         }
         if (state == "selected" || state == "selecting") {
-            // savePathsToHistory();
+            savePathsToHistory();
             // remove the selected waypoint
             pathManager.currentPath.removeSelectedWaypoint();
             pathManager.currentPath.selectWaypoint(pathManager.currentPath.waypoints.length - 1);

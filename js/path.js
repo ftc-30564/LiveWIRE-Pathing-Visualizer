@@ -181,6 +181,13 @@ class Path {
     }
 }
 
+class PathSnapshot {
+    constructor() {
+        this.paths = [];
+        this.currentIndex = -1;
+    }
+}
+
 class PathManager {
     constructor() {
         this.paths = [];
@@ -188,13 +195,10 @@ class PathManager {
         this.currentIndex = 0;
     }
 
-    setPaths(paths) {
-        this.paths = paths;
-        if (this.paths.length > 0) {
-            this.currentPath = this.paths[0];
-            this.currentPath.selected = true;
-            this.currentIndex = 0;
-        }
+    setPathSnapshot(pathSnapshot) {
+        this.paths = pathSnapshot.paths;
+        this.currentIndex = pathSnapshot.currentIndex;
+        this.currentPath = this.paths[this.currentIndex];
     }
 
     clearPaths() {
