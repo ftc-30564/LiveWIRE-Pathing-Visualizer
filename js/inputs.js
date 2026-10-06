@@ -177,7 +177,7 @@ canvas.addEventListener('mousedown', (event) => {
             if ((state == "idle") && shiftHeld) {
                 savePathsToHistory();
                 // create a new waypoint
-                pathManager.currentPath.addWaypoint(new Waypoint(mouseX, mouseY, 0).withName(`way${pathManager.currentPath.waypoints.length}`));
+                pathManager.currentPath.addWaypoint(new Waypoint(mouseX, mouseY, pathManager.currentPath.waypoints[pathManager.currentPath.waypoints.length - 1].theta).withName(`way${pathManager.currentPath.waypoints.length}`));
                 sidebar.initializeSidebar();
                 sidebar.addEventListenersToSidebarInputs();
             }
@@ -265,7 +265,7 @@ document.addEventListener('keyup', (event) => {
 
 document.getElementById("add-waypoint").onclick = () => {
     savePathsToHistory();
-    pathManager.currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${pathManager.currentPath.waypoints.length}`));
+    pathManager.currentPath.addWaypoint(new Waypoint(50, 50, pathManager.currentPath.waypoints[pathManager.currentPath.waypoints.length - 1].theta).withName(`way${pathManager.currentPath.waypoints.length}`));
     sidebar.initializeSidebar();
     sidebar.addEventListenersToSidebarInputs();
     renderer.redrawEverything();
