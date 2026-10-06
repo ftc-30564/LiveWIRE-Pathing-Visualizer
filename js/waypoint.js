@@ -32,6 +32,17 @@ class Waypoint {
         this.distanceIntoPath = 0;
     }
 
+    static newWaypoint(name, x, y, theta, maxVelocity, maxAcceleration, maxDeceleration, endingVelocity, tolerance) {
+        let wp = new Waypoint(x, y, theta);
+        wp.name = name;
+        wp.maxVelocity = maxVelocity;
+        wp.maxAcceleration = maxAcceleration;
+        wp.maxDeceleration = maxDeceleration;
+        wp.endingVelocity = endingVelocity;
+        wp.tolerance = tolerance;
+        return wp;
+    }
+
     withName(name) {
         let ret = new Waypoint(this.x, this.y, this.theta);
         ret.name = name;

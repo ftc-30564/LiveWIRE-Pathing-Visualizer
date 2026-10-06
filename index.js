@@ -5,6 +5,7 @@ const execPromise = promisify(exec);
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const Menu = require('electron').BaseWindowMenu || require('electron').Menu; // Compatibility for different Electron versions
 
 // Change this line in main.js:
 const StorePkg = require('electron-store');
@@ -77,13 +78,61 @@ ipcMain.handle('send-path-to-robot', async (event, name, pathData) => {
   }
 });
 
+function run(args) {
+  console.log('Running adb with args:', args);
+  return new Promise((resolve, reject) => {
+    exec(`adb ${args.join(' ')}`, (err, stdout, stderr) => {
+      if (err) {
+        console.error('ADB command failed:', stderr || err.message);
+        reject(err);
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+}
+
+async function listDevices() {
+  const out = await run(['devices', '-l']);
+  console.log('ADB devices output:', out);
+  return out
+    .split('\n')
+    .slice(1)
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(line => {
+      const [serial, state] = line.split(/\s+/);
+      return {
+        serial,
+        state, // 'device', 'unauthorized', 'offline'
+        type: /^\d+\.\d+\.\d+\.\d+:\d+$/.test(serial) ? 'wifi' : 'usb',
+      };
+    });
+}
+
+async function connectToHub() {
+  let devices = await listDevices();
+  console.log('Connected devices:', devices);
+  let hub = devices.find(d => d.state === 'device');
+
+  // Nothing connected: try Wi-Fi (Control Hub default IP)
+  if (!hub) {
+    try {
+      await run(['connect', '192.168.43.1:5555']);
+    } catch (e) { /* ignore, will recheck below */ }
+    devices = await listDevices();
+    hub = devices.find(d => d.state === 'device');
+  }
+
+  return hub || null;
+}
+
 ipcMain.handle('check-adb', async () => {
   try {
-    await execPromise('adb connect 192.168.43.1:5555');
-    const { stdout, stderr } = await execPromise('adb devices');
-    console.log(stdout);
-    console.log(stdout.split('\n').length - 1);
-    if ((stdout.split('\n').length - 1) > 2) {
+
+    const connected = await connectToHub();
+
+    if (connected) {
       return { success: true, message: 'Robot is available' };
     }
     else {
@@ -131,8 +180,20 @@ const createWindow = () => {
     }
   });
 
+  win.webContents.openDevTools();
+
   win.loadFile('index.html')
 }
+
+Menu.setApplicationMenu(Menu.buildFromTemplate([
+  {
+    label: 'Edit',
+    submenu: [
+      { label: 'Undo', accelerator: 'CmdOrCtrl+Z',
+        click: (_, win) => win.webContents.send('undo') }
+    ]
+  }
+]));
 
 app.whenReady().then(() => {
   createWindow()

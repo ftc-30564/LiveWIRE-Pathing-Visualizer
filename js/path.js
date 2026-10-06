@@ -188,6 +188,15 @@ class PathManager {
         this.currentIndex = 0;
     }
 
+    setPaths(paths) {
+        this.paths = paths;
+        if (this.paths.length > 0) {
+            this.currentPath = this.paths[0];
+            this.currentPath.selected = true;
+            this.currentIndex = 0;
+        }
+    }
+
     clearPaths() {
         this.paths = [];
         this.currentPath = null;

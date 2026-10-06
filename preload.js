@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendPathToRobot: (name, pathData) => ipcRenderer.invoke('send-path-to-robot', name, pathData),
   checkAdb: () => ipcRenderer.invoke('check-adb'),
   listPathsOnRobot: () => ipcRenderer.invoke('list-paths-on-robot'),
-  loadPathOnRobot: (pathName) => ipcRenderer.invoke('load-path-on-robot', pathName)
+  loadPathOnRobot: (pathName) => ipcRenderer.invoke('load-path-on-robot', pathName),
+  onUndo: cb => ipcRenderer.on('undo', cb)
 });

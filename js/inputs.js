@@ -4,6 +4,44 @@ var state = "idle"; // idle, dragging, selecting, selected
 var selectedWaypointIndex = null;
 var shiftHeld = false;
 
+var pathHistory = [];
+
+function savePathsToHistory() {
+    let paths = [];
+    for (let path of pathManager.paths) {
+        let newPath = new Path(path.name);
+        newPath.waypoints = path.waypoints.map(wp => Waypoint.newWaypoint(wp.name, wp.x, wp.y, wp.theta, wp.maxVelocity, wp.maxAcceleration, wp.maxDeceleration, wp.endingVelocity, wp.tolerance));
+        paths.push(newPath);
+    }
+    pathHistory.push(paths);
+    if (pathHistory.length > 20) {
+        pathHistory.shift();
+    }
+}
+
+// Undo/Redo functionality
+function undo(renderer, pathManager, sidebar) {
+    // alert("undoing");
+    if (pathHistory.length > 0) {
+        // alert("in effect");
+        // alert(pathHistory.length);
+        // alert(pathHistory[pathHistory.length - 1]);
+        pathManager.setPaths(pathHistory.pop());
+        // pathManager.currentPath = pathManager.paths[pathManager.paths.length - 1];
+        // pathManager.currentIndex = pathManager.paths.length - 1;
+        renderer.robotDistance = 0;
+        sidebar.initializeSidebar();
+
+        sidebar.addEventListenersToSidebarInputs();
+        sidebar.updateSidebar();
+        renderer.redrawEverything();
+        
+        updatePathButtons();
+    }
+}
+
+window.electronAPI.onUndo(() => undo(renderer, pathManager, sidebar));
+
 function updatePathButtons() {
     document.getElementById("paths").innerHTML = '';
     for (let i = 0; i < pathManager.paths.length; i++) {
@@ -40,6 +78,7 @@ function updatePathButtons() {
     addPathButton.id = "add-path-button";
     addPathButton.innerText = "+";
     addPathButton.onclick = () => {
+        savePathsToHistory();
         pathManager.addPath();
         renderer.redrawEverything();
         sidebar.initializeSidebar();
@@ -131,6 +170,7 @@ canvas.addEventListener('mousedown', (event) => {
         // if the user click isn't on a waypoint
         if (x === pathManager.currentPath.waypoints.length - 1) {
             if ((state == "idle") && shiftHeld) {
+                savePathsToHistory();
                 // create a new waypoint
                 pathManager.currentPath.addWaypoint(new Waypoint(mouseX, mouseY, 0).withName(`way${pathManager.currentPath.waypoints.length}`));
                 sidebar.initializeSidebar();
@@ -168,6 +208,7 @@ document.addEventListener('keydown', (event) => {
             return;
         }
         if (state == "selected" || state == "selecting") {
+            // savePathsToHistory();
             // remove the selected waypoint
             pathManager.currentPath.removeSelectedWaypoint();
             pathManager.currentPath.selectWaypoint(pathManager.currentPath.waypoints.length - 1);
@@ -218,6 +259,7 @@ document.addEventListener('keyup', (event) => {
 })
 
 document.getElementById("add-waypoint").onclick = () => {
+    savePathsToHistory();
     pathManager.currentPath.addWaypoint(new Waypoint(50, 50, 0).withName(`way${pathManager.currentPath.waypoints.length}`));
     sidebar.initializeSidebar();
     sidebar.addEventListenersToSidebarInputs();
@@ -252,18 +294,18 @@ checkForRobotButton.addEventListener('click', async () => {
     alert(response.message);
 })
 
-setInterval(async () => {
-    const response = await window.electronAPI.checkAdb();
+// setInterval(async () => {
+//     const response = await window.electronAPI.checkAdb();
 
-    if (response.success) {
-        document.getElementById("robot-connect-status").innerText = "CONNECTED";
-        document.getElementById("robot-connect-status").style.color = "green";
-    }
-    else {
-        document.getElementById("robot-connect-status").innerText = "NOT CONNECTED";
-        document.getElementById("robot-connect-status").style.color = "red";
-    }
-}, 1000)
+//     if (response.success) {
+//         document.getElementById("robot-connect-status").innerText = "CONNECTED";
+//         document.getElementById("robot-connect-status").style.color = "green";
+//     }
+//     else {
+//         document.getElementById("robot-connect-status").innerText = "NOT CONNECTED";
+//         document.getElementById("robot-connect-status").style.color = "red";
+//     }
+// }, 3000);
 
 const loadFromRobotButton = document.getElementById('load-robot-btn');
 loadFromRobotButton.addEventListener('click', async () => {
@@ -285,6 +327,12 @@ loadFromRobotButton.addEventListener('click', async () => {
         });
 
         setNewPath(0);
+
+        renderer.redrawEverything();
+        sidebar.initializeSidebar();
+        sidebar.addEventListenersToSidebarInputs();
+        sidebar.updateSidebar();
+        animator.resetAnimation();
         updatePathButtons();
     }
     else {
