@@ -1,5 +1,5 @@
-const FIELD_WIDTH = 128;
-const FIELD_HEIGHT = 128;
+const FIELD_WIDTH = 144;
+const FIELD_HEIGHT = 144;
 
 const canvas = document.getElementById("field-canvas");
 const ctx = canvas.getContext("2d");
