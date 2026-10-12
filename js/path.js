@@ -236,5 +236,6 @@ class PathManager {
         this.currentPath = this.paths[index];
         this.currentPath.selected = true;
         this.currentIndex = index;
+        this.currentPath.updateWaypointChain();
     }
 }

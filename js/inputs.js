@@ -88,9 +88,10 @@ function updatePathButtons() {
         sidebar.initializeSidebar();
         sidebar.addEventListenersToSidebarInputs();
         sidebar.updateSidebar();
-        animator.resetAnimation();
+
         updatePathButtons();
         renderer.redrawEverything();
+        animator.resetAnimation();
     }
 
     document.getElementById("paths").appendChild(addPathButton);
@@ -104,12 +105,12 @@ function updatePathButtons() {
 
 function setNewPath(index) {
     pathManager.setNewPath(index);
-    renderer.redrawEverything();
     sidebar.initializeSidebar();
     sidebar.addEventListenersToSidebarInputs();
     sidebar.updateSidebar();
     animator.resetAnimation();
     updatePathButtons();
+    renderer.redrawEverything();
 }
 
 window.addEventListener('initialize', () => {
@@ -293,9 +294,19 @@ document.getElementById("settings-exit").onclick = () => {
 }
 
 const checkForRobotButton = document.getElementById('check-devices-btn');
+var connectedToRobot = false;
+
 checkForRobotButton.addEventListener('click', async () => {
     const response = await window.electronAPI.checkAdb();
 
+    if (response.success) {
+        document.getElementById("robot-connect-status").innerText = "CONNECTED";
+        document.getElementById("robot-connect-status").style.color = "green";
+    }
+    else {
+        document.getElementById("robot-connect-status").innerText = "NOT CONNECTED";
+        document.getElementById("robot-connect-status").style.color = "red";
+    }
     alert(response.message);
 })
 
@@ -320,25 +331,26 @@ loadFromRobotButton.addEventListener('click', async () => {
         alert(response.paths);
 
         pathManager.clearPaths();
+
+        var currPath = 0;
+
         response.paths.forEach(async name => {
             const pathResponse = await window.electronAPI.loadPathOnRobot(name);
             if (pathResponse.success) {
-                alert("Successfully loaded path " + name);
+                // alert("Successfully loaded path " + name);
                 pathManager.addPathFromJson(pathResponse.data);
             }
             else {
                 alert("ERROR while loading path " + name);
             }
+
+            currPath += 1;
+
+            if (currPath >= response.paths.length) {
+                alert("we dn");
+                setNewPath(0);
+            }
         });
-
-        setNewPath(0);
-
-        renderer.redrawEverything();
-        sidebar.initializeSidebar();
-        sidebar.addEventListenersToSidebarInputs();
-        sidebar.updateSidebar();
-        animator.resetAnimation();
-        updatePathButtons();
     }
     else {
         alert(response.message);
