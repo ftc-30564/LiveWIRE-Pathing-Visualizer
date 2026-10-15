@@ -1,14 +1,14 @@
 {
-  "name": "visualizer",
-  "version": "1.0.0",
-  "description": "",
+  "name": "LiveWIRE Pathing Visualizer",
+  "version": "0.1.0-beta.1",
+  "description": "A pathing visualizer and tool for FTC team 30564: WIRE We Doing This?",
   "main": "index.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Luke White",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
