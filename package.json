@@ -13,6 +13,7 @@
   "type": "commonjs",
   "devDependencies": {
     "@electron-forge/cli": "^8.0.1",
+    "@electron/packager": "^20.3.0",
     "electron": "^43.0.0"
   },
   "dependencies": {

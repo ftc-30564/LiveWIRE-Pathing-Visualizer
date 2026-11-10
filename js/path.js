@@ -1,4 +1,16 @@
 class Path {
+    static createPath(name, selected, isVisible, waypoints, selectedWaypointIndex, totalAnimationTime) {
+        let ret = new Path(name);
+        ret.selected = selected;
+        ret.isVisible = isVisible;
+        ret.waypoints = waypoints;
+        ret.selectedWaypointIndex = selectedWaypointIndex;
+        ret.totalAnimationTime = totalAnimationTime;
+        ret.updateWaypointChain();
+
+        return ret;
+    }
+
     constructor(name) {
         this.name = name;
         this.selected = false;
@@ -7,6 +19,19 @@ class Path {
         this.selectedWaypointIndex = null;
         this.totalAnimationTime;
         this.updateWaypointChain();
+    }
+
+    dup() {
+        return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+        //return Path.createPath(this.name, this.selected, this.isVisible, this.waypoints, this.selectedWaypointIndex, this.totalAnimationTime);
+    }
+
+    mirrorWaypoint(index) {
+        let waypoint = this.waypoints[index];
+        waypoint.x = 144 - waypoint.x
+        waypoint.y = 144 - waypoint.y;
+        
+        waypoint.theta = (((waypoint.theta + 180) % 360) + 360) % 360;
     }
 
     addWaypoint(waypoint) {
@@ -193,6 +218,51 @@ class PathManager {
         this.paths = [];
         this.currentPath = null;
         this.currentIndex = 0;
+    }
+
+    removePath(index) {
+        if (index < 0 || index >= this.paths.length) {
+            console.error("Invalid path index: " + index);
+            return;
+        }
+
+        this.paths.splice(index, 1);
+
+        if ((this.currentIndex === index) && (this.paths.length > 1)) {
+            this.currentPath = null;
+            this.setNewPath(Math.max(0, index - 1));
+        } else if (this.currentIndex > index) {
+            this.setNewPath(this.currentIndex - 1);
+        }
+    }
+
+    duplicatePath(index) {
+        if (index < 0 || index >= this.paths.length) {
+            console.error("Invalid path index: " + index);
+            return;
+        }
+        this.paths.push(this.paths[index].dup());
+    }
+
+    duplicateAndMirrorPath(index) {
+        if (index < 0 || index >= this.paths.length) {
+            console.error("Invalid path index: " + index);
+            return;
+        }
+        const mirroredPath = this.paths[index].dup();
+
+        for (let x = 0; x < mirroredPath.waypoints.length; x ++) {
+            mirroredPath.mirrorWaypoint(x);
+        }
+
+        mirroredPath.selected = false;
+        mirroredPath.isVisible = false;
+
+        if (mirroredPath.name.slice(0, 5) == "blue_") {
+            mirroredPath.name = "red_" + mirroredPath.name.slice(5);
+        }
+
+        this.paths.push(mirroredPath);
     }
 
     setPathSnapshot(pathSnapshot) {

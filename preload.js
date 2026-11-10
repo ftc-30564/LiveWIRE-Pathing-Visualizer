@@ -9,5 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkAdb: () => ipcRenderer.invoke('check-adb'),
   listPathsOnRobot: () => ipcRenderer.invoke('list-paths-on-robot'),
   loadPathOnRobot: (pathName) => ipcRenderer.invoke('load-path-on-robot', pathName),
-  onUndo: cb => ipcRenderer.on('undo', cb)
+  onUndo: cb => ipcRenderer.on('undo', cb),
+  showCustomMenu: (elementData) => ipcRenderer.send('show-context-menu', elementData),
+  onMenuOptionSelected: (callback) => ipcRenderer.on('menu-action', (_event, value) => callback(value))
 });

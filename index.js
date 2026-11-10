@@ -1,11 +1,10 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, MenuItem } = require('electron');
 const { exec } = require('child_process');
 const { promisify } = require('util');
 const execPromise = promisify(exec);
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const Menu = require('electron').BaseWindowMenu || require('electron').Menu; // Compatibility for different Electron versions
 
 // Change this line in main.js:
 const StorePkg = require('electron-store');
@@ -78,7 +77,7 @@ ipcMain.handle('send-path-to-robot', async (event, name, pathData) => {
   }
 });
 
-function run(args) {
+function runAdb(args) {
   console.log('Running adb with args:', args);
   return new Promise((resolve, reject) => {
     exec(`adb ${args.join(' ')}`, (err, stdout, stderr) => {
@@ -93,7 +92,8 @@ function run(args) {
 }
 
 async function listDevices() {
-  const out = await run(['devices', '-l']);
+  const out = await runAdb
+(['devices', '-l']);
   console.log('ADB devices output:', out);
   return out
     .split('\n')
@@ -118,7 +118,8 @@ async function connectToHub() {
   // Nothing connected: try Wi-Fi (Control Hub default IP)
   if (!hub) {
     try {
-      await run(['connect', '192.168.43.1:5555']);
+      await runAdb
+    (['connect', '192.168.43.1:5555']);
     } catch (e) { /* ignore, will recheck below */ }
     devices = await listDevices();
     hub = devices.find(d => d.state === 'device');
@@ -126,6 +127,16 @@ async function connectToHub() {
 
   return hub || null;
 }
+
+ipcMain.on('show-context-menu', (event) => {
+  const template = [
+    { label: 'Delete Path', click: () => { event.sender.send('menu-action', 'delete-path') } },
+    { label: 'Duplicate Path', click: () => { event.sender.send('menu-action', 'duplicate-path') } },
+    { label: 'Duplicate And Mirror Path', click: () => { event.sender.send('menu-action', 'duplicate-and-mirror-path') } }
+  ]
+  const menu = Menu.buildFromTemplate(template)
+  menu.popup()
+})
 
 ipcMain.handle('check-adb', async () => {
   try {
