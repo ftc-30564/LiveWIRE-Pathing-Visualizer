@@ -49,20 +49,62 @@ function undo() {
 
 window.electronAPI.onUndo(() => undo());
 
-document.getElementById("duplicate-and-mirror-button").addEventListener("click", () => {
-    let totalLength = pathManager.paths.length;
-    for (let i = 0; i < totalLength; i ++) {
-        savePathsToHistory();
-        pathManager.duplicateAndMirrorPath(i);
-    }
-    sidebar.initializeSidebar();
-    sidebar.addEventListenersToSidebarInputs();
-    sidebar.updateSidebar();
-    animator.resetAnimation();
-    updatePathButtons();
-    renderer.redrawEverything();
-});
+// document.getElementById("duplicate-and-mirror-button").addEventListener("click", () => {
+//     let totalLength = pathManager.paths.length;
+//     for (let i = 0; i < totalLength; i ++) {
+//         savePathsToHistory();
+//         pathManager.duplicateAndMirrorPath(i);
+//     }
+//     sidebar.initializeSidebar();
+//     sidebar.addEventListenersToSidebarInputs();
+//     sidebar.updateSidebar();
+//     animator.resetAnimation();
+//     updatePathButtons();
+//     renderer.redrawEverything();
+// });
             
+
+// MARK: Right click
+
+window.electronAPI.onMenuOptionSelected((action) => {
+    alert("menu sel");
+    console.log(`User clicked menu item with action: ${action}`)
+    console.log(`Current right clicked path index: ${currentRightClickedPathIndex}`)
+
+    if (action === 'delete-path') {
+        if (pathManager.paths.length == 1) {
+            return;
+        }
+        savePathsToHistory();
+        pathManager.removePath(currentRightClickedPathIndex);
+        sidebar.initializeSidebar();
+        sidebar.addEventListenersToSidebarInputs();
+        sidebar.updateSidebar();
+        animator.resetAnimation();
+        updatePathButtons();
+        renderer.redrawEverything();
+    }
+    else if (action === 'duplicate-path') {
+        savePathsToHistory();
+        pathManager.duplicatePath(currentRightClickedPathIndex);
+        sidebar.initializeSidebar();
+        sidebar.addEventListenersToSidebarInputs();
+        sidebar.updateSidebar();
+        animator.resetAnimation();
+        updatePathButtons();
+        renderer.redrawEverything();
+    }
+    else if (action === 'duplicate-and-mirror-path') {
+        savePathsToHistory();
+        pathManager.duplicateAndMirrorPath(currentRightClickedPathIndex);
+        sidebar.initializeSidebar();
+        sidebar.addEventListenersToSidebarInputs();
+        sidebar.updateSidebar();
+        animator.resetAnimation();
+        updatePathButtons();
+        renderer.redrawEverything();
+    }
+})
 
 function updatePathButtons() {
     document.getElementById("paths").innerHTML = '';
@@ -82,52 +124,11 @@ function updatePathButtons() {
 
         //const specialZone = document.getElementById('my-right-click-zone')
 
-        // MARK: Right Click
         pathButton.addEventListener('contextmenu', (event) => {
-            event.preventDefault() // Stop the browser's default behavior
+            event.preventDefault()
             currentRightClickedPathIndex = i;
             window.electronAPI.showCustomMenu({ pathIndex: i })
         });
-
-        // window.electronAPI.onMenuOptionSelected((action) => {
-        //     alert("menu sel");
-        //     console.log(`User clicked menu item with action: ${action}`)
-        //     console.log(`Current right clicked path index: ${currentRightClickedPathIndex}`)
-
-        //     if (action === 'delete-path') {
-        //         if (pathManager.paths.length == 1) {
-        //             return;
-        //         }
-        //         savePathsToHistory();
-        //         pathManager.removePath(currentRightClickedPathIndex);
-        //         sidebar.initializeSidebar();
-        //         sidebar.addEventListenersToSidebarInputs();
-        //         sidebar.updateSidebar();
-        //         animator.resetAnimation();
-        //         updatePathButtons();
-        //         renderer.redrawEverything();
-        //     }
-        //     else if (action === 'duplicate-path') {
-        //         savePathsToHistory();
-        //         pathManager.duplicatePath(currentRightClickedPathIndex);
-        //         sidebar.initializeSidebar();
-        //         sidebar.addEventListenersToSidebarInputs();
-        //         sidebar.updateSidebar();
-        //         animator.resetAnimation();
-        //         updatePathButtons();
-        //         renderer.redrawEverything();
-        //     }
-        //     else if (action === 'duplicate-and-mirror-path') {
-        //         savePathsToHistory();
-        //         pathManager.duplicateAndMirrorPath(currentRightClickedPathIndex);
-        //         sidebar.initializeSidebar();
-        //         sidebar.addEventListenersToSidebarInputs();
-        //         sidebar.updateSidebar();
-        //         animator.resetAnimation();
-        //         updatePathButtons();
-        //         renderer.redrawEverything();
-        //     }
-        // })
 
         pathDiv.appendChild(pathButton);
 

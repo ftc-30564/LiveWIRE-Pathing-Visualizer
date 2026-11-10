@@ -3,7 +3,13 @@ class Path {
         let ret = new Path(name);
         ret.selected = selected;
         ret.isVisible = isVisible;
-        ret.waypoints = waypoints;
+
+        ret.waypoints = [];
+
+        waypoints.forEach(waypoint => {
+            ret.waypoints.push(waypoint.copy());
+        });
+
         ret.selectedWaypointIndex = selectedWaypointIndex;
         ret.totalAnimationTime = totalAnimationTime;
         ret.updateWaypointChain();
@@ -17,13 +23,13 @@ class Path {
         this.isVisible = false;
         this.waypoints = [new Waypoint(50, 50, 0).withName("way0"), new Waypoint(75, 75, 45).withName("way1")];
         this.selectedWaypointIndex = null;
-        this.totalAnimationTime;
+        this.totalAnimationTime = 0;
         this.updateWaypointChain();
     }
 
     dup() {
-        return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
-        //return Path.createPath(this.name, this.selected, this.isVisible, this.waypoints, this.selectedWaypointIndex, this.totalAnimationTime);
+        //return structuredClone(this);
+        return Path.createPath(this.name, this.selected, this.isVisible, this.waypoints, this.selectedWaypointIndex, this.totalAnimationTime);
     }
 
     mirrorWaypoint(index) {
@@ -241,7 +247,15 @@ class PathManager {
             console.error("Invalid path index: " + index);
             return;
         }
-        this.paths.push(this.paths[index].dup());
+
+        const dupPath = this.paths[index].dup();
+
+        dupPath.selected = false;
+        dupPath.isVisible = false;
+
+        dupPath.name = dupPath.name + "_copy";
+
+        this.paths.push(dupPath);
     }
 
     duplicateAndMirrorPath(index) {
@@ -257,6 +271,8 @@ class PathManager {
 
         mirroredPath.selected = false;
         mirroredPath.isVisible = false;
+
+        mirroredPath.name = mirroredPath.name + "_mirrored";
 
         if (mirroredPath.name.slice(0, 5) == "blue_") {
             mirroredPath.name = "red_" + mirroredPath.name.slice(5);
@@ -302,6 +318,7 @@ class PathManager {
         }
         if (this.currentPath) {
             this.currentPath.selected = false;
+            this.currentPath.isVisible = false;
         }
         this.currentPath = this.paths[index];
         this.currentPath.selected = true;

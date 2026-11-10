@@ -43,6 +43,18 @@ class Waypoint {
         return wp;
     }
 
+    copy() {
+        let ret = new Waypoint(this.x, this.y, this.theta);
+        ret.name = this.name;
+        ret.maxVelocity = this.maxVelocity;
+        ret.maxAcceleration = this.maxAcceleration;
+        ret.maxDeceleration = this.maxDeceleration;
+        ret.endingVelocity = this.endingVelocity;
+        ret.tolerance = this.tolerance;
+        ret.isPathBreak = this.isPathBreak;
+        return ret;
+    }
+
     withName(name) {
         let ret = new Waypoint(this.x, this.y, this.theta);
         ret.name = name;
